@@ -1,0 +1,3 @@
+include LICENSE-MIT
+include README.md
+recursive-include management *
