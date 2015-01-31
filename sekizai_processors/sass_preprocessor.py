@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 import os
 import hashlib
+import json
 import sass
 from django.conf import settings
 from django.contrib.staticfiles.finders import get_finders
@@ -19,7 +20,7 @@ from compressor.utils import get_class
 class SassFileStorage(FileSystemStorage):
     def __init__(self, location=None, base_url=None, *args, **kwargs):
         if location is None:
-            location = settings.STATIC_ROOT  # could be replaced by SEKIZAI_ROOT
+            location = getattr(settings, 'SEKIZAI_PROCESSORS_ROOT', settings.STATIC_ROOT)
         if base_url is None:
             base_url = settings.STATIC_URL
         super(SassFileStorage, self).__init__(location, base_url, *args, **kwargs)
@@ -31,22 +32,10 @@ class SCSSProcessor(object):
     def __init__(self):
         self.Parser = get_class(CompressorConf.PARSER)
         self.base_url = urlparse(settings.STATIC_URL)
-        self.include_paths = []
+        self.include_paths = list(getattr(settings, 'SEKIZAI_PROCESSOR_INCLUDE_DIRS', []))
         self.storage = SassFileStorage()
-        self.md5 = hashlib.md5()
+        self.sass_exts = ('.scss', '.sass',)
         self._hash_cache = {}
-        for finder in get_finders():
-            try:
-                storages = finder.storages
-            except AttributeError:
-                continue
-            for storage in storages.values():
-                try:
-                    self.include_paths.append(storage.path('.'))
-                except NotImplementedError:
-                    # storages that do not implement 'path' do not store files locally,
-                    # and thus cannot provide an include path
-                    pass
 
     def __call__(self, context, data, namespace):
         parser = self.Parser(data)
@@ -60,24 +49,46 @@ class SCSSProcessor(object):
             sass_name = url2pathname(href[len(self.base_url[2]):])
             base_name, ext = os.path.splitext(sass_name)
             filename = self.find(sass_name)
-            if not filename or ext not in ['.sass', '.scss']:
+            if not filename or ext not in self.sass_exts:
                 continue
-            # built the name of the compiled file and check if it already exists
-            hashsum = self.file_hash(filename)
-            css_name = '{0}.{1}.css'.format(base_name, hashsum)
-            attribs['href'] = self.storage.url(css_name)
-            if self.find(css_name):  # TODO: cache this information
+            # check from timestamps, if we must recompile
+            css_filename = base_name + '.css'
+            attribs['href'] = self.storage.url(css_filename)
+            sourcemap_filename = css_filename + '.map'
+            if self.is_latest(sourcemap_filename):
                 continue
             # otherwise compile the .scss file into .css and store it
-            content = ContentFile(sass.compile(include_paths=self.include_paths, filename=filename))
-            css_name = self.storage.save(css_name, content)
+            source_map_url = self.storage.url(sourcemap_filename)
+            content, sourcemap = sass.compile(filename=filename,
+                source_map_filename=source_map_url, include_paths=self.include_paths)
+            if self.storage.exists(css_filename):
+                self.storage.delete(css_filename)
+            self.storage.save(css_filename, ContentFile(content))
+            if self.storage.exists(sourcemap_filename):
+                self.storage.delete(sourcemap_filename)
+            self.storage.save(sourcemap_filename, ContentFile(sourcemap))
         return mark_safe(''.join(self.template.render(Context(ctx)) for ctx in attribs_list))
+
+    def is_latest(self, sourcemap_filename):
+        sourcemap_filename = self.find(sourcemap_filename)
+        if not sourcemap_filename or not os.path.isfile(sourcemap_filename):
+            return False
+        sourcemap_mtime = os.stat(sourcemap_filename).st_mtime
+        with open(sourcemap_filename, 'r') as fp:
+            sourcemap = json.load(fp)
+        for srcfilename in sourcemap.get('sources'):
+            components = os.path.normpath(srcfilename).split(os.path.sep)
+            srcfilename = ''.join([os.path.sep + c for c in components if c != os.path.pardir])
+            if not os.path.isfile(srcfilename) or os.stat(srcfilename).st_mtime > sourcemap_mtime:
+                # at least one of the source is younger that the sourcemap referring it, therefore recompile
+                return False
+        return True
 
     def compile_offline(self, path):
             sass_name = url2pathname(path)
             base_name, ext = os.path.splitext(sass_name)
             sass_filename = self.find(sass_name)
-            if not sass_filename or ext != '.scss':
+            if not sass_filename or ext not in self.sass_exts:
                 return
             hashsum = self.file_hash(sass_filename)
             css_name = '{0}.{1}.css'.format(base_name, hashsum)
@@ -95,14 +106,19 @@ class SCSSProcessor(object):
     def file_hash(self, filename):
         blocksize = 65536
         if filename in self._hash_cache:
-            return self._hash_cache[filename]
-        content = open(filename, 'rb')
-        buf = content.read(blocksize)
-        while len(buf) > 0:
-            self.md5.update(buf)
-            buf = content.read(blocksize)
-        hashsum = self.md5.hexdigest()[:12]
-        self._hash_cache[filename] = hashsum
+            mtime = os.stat(filename).st_mtime
+            if mtime == self._hash_cache[filename][1]:
+                return self._hash_cache[filename][0]
+        md5 = hashlib.md5()
+        with open(filename, 'rb') as content:
+            while True:
+                buf = content.read(blocksize)
+                if len(buf) > 0:
+                    md5.update(buf)
+                else:
+                    break
+        hashsum = md5.hexdigest()[:12]
+        self._hash_cache[filename] = (hashsum, os.stat(filename).st_mtime)
         return hashsum
 
 compilescss = SCSSProcessor()
