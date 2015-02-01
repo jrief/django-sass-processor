@@ -84,18 +84,19 @@ class SCSSProcessor(object):
                 return False
         return True
 
-    def compile_offline(self, path):
-            sass_name = url2pathname(path)
-            base_name, ext = os.path.splitext(sass_name)
-            sass_filename = self.find(sass_name)
-            if not sass_filename or ext not in self.sass_exts:
-                return
-            hashsum = self.file_hash(sass_filename)
-            css_name = '{0}.{1}.css'.format(base_name, hashsum)
-            css_filename = os.path.join(sass_filename[:-len(sass_name)], css_name)
-            content = sass.compile(include_paths=self.include_paths, filename=sass_filename)
-            with open(css_filename, 'w') as fh:
-                fh.write(content)
+    def compile_offline(self, srcpath):
+        sass_name = url2pathname(srcpath)
+        sass_filename = self.find(sass_name)
+        if not sass_filename:
+            return
+        base_name, ext = os.path.splitext(sass_filename)
+        if ext not in self.sass_exts:
+            return
+        content = sass.compile(include_paths=self.include_paths, filename=sass_filename, output_style='compact')
+        destpath = base_name + '.css'
+        with open(destpath, 'w') as fh:
+            fh.write(content)
+        return destpath
 
     def find(self, path):
         for finder in get_finders():
@@ -104,6 +105,7 @@ class SCSSProcessor(object):
                 return result
 
     def file_hash(self, filename):
+        """Currently unused: Hash the content of the file"""
         blocksize = 65536
         if filename in self._hash_cache:
             mtime = os.stat(filename).st_mtime

@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import os
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.contrib.staticfiles.templatetags.staticfiles import StaticFilesNode
+from django.templatetags.static import StaticNode
 from django.utils.importlib import import_module
 from sekizai.templatetags.sekizai_tags import Addtoblock, import_processor
 from compressor.offline.django import DjangoParser
@@ -18,10 +18,12 @@ class Command(BaseCommand):
         super(Command, self).__init__()
 
     def handle(self, *args, **options):
+        self.verbosity = int(options.get('verbosity'))
         templates = self.find_templates()
         for template_name in templates:
             self.parse_template(template_name)
-        self.stdout.write('Successfully compiled')
+        if self.verbosity > 0:
+            self.stdout.write('Successfully compiled all referred .scss files.')
 
     def find_templates(self):
         paths = set()
@@ -57,22 +59,7 @@ class Command(BaseCommand):
                 source, name = finder_func('test')
             except TemplateDoesNotExist:
                 pass
-            # Reload template_source_loaders now that it has been calculated ;
-            # it should contain the list of valid, instanciated template loaders
-            # to use.
         loaders = []
-        # If template loader is CachedTemplateLoader, return the loaders
-        # that it wraps around. So if we have
-        # TEMPLATE_LOADERS = (
-        #    ('django.template.loaders.cached.Loader', (
-        #        'django.template.loaders.filesystem.Loader',
-        #        'django.template.loaders.app_directories.Loader',
-        #    )),
-        # )
-        # The loaders will return django.template.loaders.filesystem.Loader
-        # and django.template.loaders.app_directories.Loader
-        # The cached Loader and similar ones include a 'loaders' attribute
-        # so we look for that.
         for loader in template_source_loaders:
             if hasattr(loader, 'loaders'):
                 loaders.extend(loader.loaders)
@@ -101,19 +88,29 @@ class Command(BaseCommand):
             self.stdout.write("Error parsing template %s: %s\n" % (template_name, e))
         else:
             for node in nodes:
-                preprocessor = getattr(node.kwargs['preprocessor'], 'literal', None).strip('"')
-                path = [n.path.var for n in node.nodelist if isinstance(n, StaticFilesNode)]
+                name = node.kwargs['name'].literal
+                name = name and name.strip('"')
+                preprocessor = node.kwargs['preprocessor'].literal or settings.SEKIZAI_PREPROCESSORS.get(name)
+                path = [n.path.var for n in node.nodelist if isinstance(n, StaticNode)]
                 if preprocessor and path:
-                    path = path[0]
-                    processor = import_processor(preprocessor)
+                    srcpath = path[0]
+                    processor = import_processor(preprocessor.strip('"'))
                     func = getattr(processor, 'compile_offline', None)
                     if callable(func):
-                        func(path)
+                        destpath = func(srcpath)
+                        if destpath and self.verbosity > 1:
+                            self.stdout.write("Compiled %s\n" % srcpath)
 
     def walk_nodes(self, node):
+        """
+        Iterate over the nodes recursively yielding the templatetag 'addtoblock'
+        """
         for node in self.parser.get_nodelist(node):
             if isinstance(node, Addtoblock):
-                if getattr(node.kwargs['preprocessor'], 'literal', None):
+                if node.kwargs['preprocessor'].literal:
+                    yield node
+                name = node.kwargs['name'].literal
+                if name and name.strip('"') in settings.SEKIZAI_PREPROCESSORS:
                     yield node
             else:
                 for node in self.walk_nodes(node):
