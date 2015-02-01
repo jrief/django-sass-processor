@@ -54,8 +54,9 @@ Bootstrap-SASS, using ``npm install compass-mixins bootstrap-sass``.
 
 **django-sekizai-processors** is shipped with a built-in preprocessor to convert
 ``*.scss`` or ``*.sass`` files into ``*.css`` while rendering the template. For performance reasons
-this is done only once, but the preprocessor keeps track on the timestamps and recompiles if any
-of the SASS file is younger than the generated CSS file.
+this is done only once, but the preprocessor keeps track on the timestamps and recompiles only, if
+any of the imported SASS files is younger than the corresponding generated CSS file.
+
 
 ### In your Django templates
 

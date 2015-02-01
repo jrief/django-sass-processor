@@ -15,7 +15,7 @@ CLASSIFIERS = [
     'Programming Language :: Python',
     'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     'Programming Language :: Python :: 2.7',
-    'Programming Language :: Python :: 3.3',
+    # not tested: 'Programming Language :: Python :: 3.3',
 ]
 
 
@@ -26,12 +26,12 @@ def read(fname):
 setup(
     name='django-sekizai-processors',
     version=__version__,
-    description='Processors to compile SASS/SCSS files in combination with django-sekizai',
+    description='Processors to (also offline) compile SASS/SCSS files when used with django-sekizai',
     author='Jacob Rief',
     author_email='jacob.rief@gmail.com',
     url='https://github.com/jrief/django-sekizai-processors',
     packages=find_packages(),
-    install_requires=[],
+    install_requires=['django-sekizai'],
     license='LICENSE-MIT',
     platforms=['OS Independent'],
     classifiers=CLASSIFIERS,
