@@ -5,9 +5,14 @@ option on Sekizai's templatetag ``addtoblock``. In the future other markup langu
 ``postprocessor`` option for Sekizai's templatetag  ``render_block`` will also be supported.
 
 Additionally, **django-sekizai-processors** is shipped with a management command, which can convert
-the content of all occurrences inside the templatetag ``addtoblock`` as an offline operation.
+the content of all occurrences inside the templatetag ``addtoblock`` as an offline operation. Hence
+the **libsass** compiler is not required in a production environment.
 
-By using this preprocessor, you can safely remove your Ruby projects Compass and SASS.
+During development, a [sourcemap](https://developer.chrome.com/devtools/docs/css-preprocessors) is
+generated along side with the compiled ``*.css`` file. This allows to debug style sheet errors much
+easier.
+
+By using this preprocessor, you can safely remove your Ruby projects “Compass” and “SASS”.
 
 ## Installation
 
@@ -50,7 +55,7 @@ Bootstrap-SASS, using ``npm install compass-mixins bootstrap-sass``.
 **django-sekizai-processors** is shipped with a built-in preprocessor to convert
 ``*.scss`` or ``*.sass`` files into ``*.css`` while rendering the template. For performance reasons
 this is done only once, but the preprocessor keeps track on the timestamps and recompiles if any
-SASS file is younger than the generated CSS file.
+of the SASS file is younger than the generated CSS file.
 
 ### In your Django templates
 
@@ -65,7 +70,11 @@ SASS file is younger than the generated CSS file.
 If you want to precompile all occurences of your SASS files, on the command line invoke:
 
 ```
-./manage.py compilesass
+./manage.py compilescss
 ```
 
-This is useful for production environments, where SASS files can't be compiled on the fly.
+This is useful for production environments, where SASS files can't be compiled on the fly. To
+simplify the deployment, the compiled ``*.css`` files are stored side-by-side with their
+corresponding ``*.scss`` files; just run ``./manage.py collectstatic`` the usual way. In case you
+don't want to expose the ``*.scss`` files in a production environment, deploy with
+``./manage.py collectstatic --ignore=.scss``.
