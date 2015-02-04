@@ -37,7 +37,7 @@ class SCSSProcessor(object):
         self.sass_exts = ('.scss', '.sass',)
         self._hash_cache = {}
 
-    def __call__(self, context, data, namespace):
+    def __call__(self, context, data, namespace=None):
         parser = self.Parser(data)
         attribs_list = []
         for elem in parser.css_elems():
