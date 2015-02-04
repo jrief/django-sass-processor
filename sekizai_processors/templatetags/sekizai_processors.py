@@ -3,8 +3,7 @@ from classytags.arguments import Flag
 from classytags.core import Tag, Options
 from classytags.parser import Parser
 from django import template
-from .. import sass_preprocessor
-
+from ..sass_preprocessor import compilescss
 
 register = template.Library()
 
@@ -19,7 +18,6 @@ class ProcessorParser(Parser):
 
 class SassProcessor(Tag):
     name = 'sassprocessor'
-    processor = sass_preprocessor.SCSSProcessor()
 
     options = Options(
         Flag('strip', default=False, true_values=['strip']),
@@ -30,7 +28,7 @@ class SassProcessor(Tag):
         rendered_contents = nodelist.render(context)
         if strip:
             rendered_contents = rendered_contents.strip()
-        rendered_contents = self.processor(context, rendered_contents)
+        rendered_contents = compilescss(context, rendered_contents)
         return rendered_contents
 
 register.tag(SassProcessor)
