@@ -49,6 +49,23 @@ SEKIZAI_PROCESSOR_INCLUDE_DIRS = (
 Annotation: For this example, you are encouraged to install the dependencies for Compass and/or
 Bootstrap-SASS, using ``npm install compass-mixins bootstrap-sass``.
 
+During development, the compiled file is placed into the ``STATIC_ROOT`` folder in order to not
+pollute your local ``static/css/...`` folders with auto-generated files.
+Therefore assure, that in ``settings.py``, ``STATIC_ROOT`` points to an writable directory.
+
+Since **django-sekizai-processors** depends on **django-compressor**, just add the
+``CompressorFinder`` to your ``settings.py``: 
+
+```
+STATICFILES_FINDERS = (
+    ...
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
+)
+```
+
+In the future this addtional dependency will be removed.
 
 ## Preprocessing SASS
 
@@ -61,7 +78,7 @@ any of the imported SASS files is younger than the corresponding generated CSS f
 ### In your Django templates
 
 ```html
-{% load sekizai %}
+{% load sekizai_tags %}
 
 {% addtoblock "css" preprocessor "sekizai_processors.sass_preprocessor.compilescss" %}<link href="{% static 'myapp/css/mystyle.scss' %}" rel="stylesheet" type="text/css" />{% endaddtoblock %}
 ```
