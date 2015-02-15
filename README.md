@@ -1,9 +1,10 @@
 # django-sass-processor
 
-Processors to compile files from markup languages such as SASS/SCSS, if referenced by the special
-templatetag ``sass_src``, which behavies similar to the built-in tag ``static``.
+Processor to compile files from markup languages such as SASS/SCSS, if referenced using the
+templatetag ``{% sass_src 'path/to/file.scss' %}``. This special templatetag can be used instead of
+the built-in tag ``static``.
 
-Additionally, **django-sass-processors** is shipped with a management command, which can convert
+Additionally, **django-sass-processor** is shipped with a management command, which can convert
 the content of all occurrences inside the templatetag ``sass_src`` as an offline operation. Hence
 the **libsass** compiler is not required in a production environment.
 
@@ -20,14 +21,14 @@ pip install libsass django-compressor django-sass-processor
 ```
 
 ``django-compressor`` is required only for offline compilation, when using the command
-``manage.py compilescss``
+``manage.py compilescss``.
 
-``libsass`` is not required on the production environment, ff SASS/SCSS files have been precompiled
+``libsass`` is not required on the production environment, if SASS/SCSS files have been precompiled
 and deployed using offline compilation.
 
 ## Configuration
 
-In ``settings.py``:
+In ``settings.py`` add to:
 
 ```python
 INSTALLED_APPS = (
@@ -37,33 +38,31 @@ INSTALLED_APPS = (
 )
 ```
 
-Optionally, add a list of additional search pathes, the SASS compiler may examine when using the
-``@import "...";`` tag in SASS files:
+Optionally, add a list of additional search paths, the SASS compiler may examine when using the
+``@import "...";`` statement in SASS/SCSS files:
 
 ```python
 import os
 
 SASS_PROCESSOR_INCLUDE_DIRS = (
-    os.path.join(PROJECT_PATH, 'styles/scss'),
+    os.path.join(PROJECT_PATH, 'mystyles/scss'),
     os.path.join(PROJECT_PATH, 'node_modules'),
 )
 ```
 
-During development, the compiled file is placed into the folder referenced by ``SASS_PROCESSOR_ROOT``.
-If unset, this setting defaults to ``STATIC_ROOT``. It prevents to pollute your local
-``static/css/...`` folders with auto-generated files.
-Therefore assure, that in ``settings.py``, ``SASS_PROCESSOR_ROOT`` (or, if unset ``STATIC_ROOT``)
-points onto an writable directory.
+During development, or when ``SASS_PROCESSOR_ENABLED`` is set to ``True``, the compiled file is
+placed into the folder referenced by ``SASS_PROCESSOR_ROOT`` (if unset, this setting defaults to
+``STATIC_ROOT``). Having a location outside of the working directory prevents to pollute your local
+``static/css/...`` folders with auto-generated files. Therefore assure, that this directory is
+writable by the Django runserver.
 
-During development, assure that generated ``*.css`` can be found in the folder referred by
-``SASS_PROCESSOR_ROOT``. Therefore **django-sass-processor** is shipped with a special finder for
-that purpose, just add it to your ``settings.py``: 
+**django-sass-processor** is shipped with a special finder, to locate the generated ``*.css`` files
+in the folder referred by ``SASS_PROCESSOR_ROOT`` (or, if unset ``STATIC_ROOT``). Just add it to
+your ``settings.py``: 
 
 ```
 STATICFILES_FINDERS = (
     ...
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'sass_processor.finders.CssFinder',
     ...
 )
@@ -73,7 +72,7 @@ STATICFILES_FINDERS = (
 
 **django-sass-processor** is shipped with a built-in preprocessor to convert ``*.scss`` or
 ``*.sass`` files into ``*.css`` while rendering the template. For performance reasons
-this is done only once, but the preprocessor keeps track on the timestamps and recompiles only, if
+this is done only once, but the preprocessor keeps track on the timestamps and recompiles, if
 any of the imported SASS/SCSS files is younger than the corresponding generated CSS file.
 
 
@@ -85,9 +84,13 @@ any of the imported SASS/SCSS files is younger than the corresponding generated 
 <link href="{% sass_src 'myapp/css/mystyle.scss' %}" rel="stylesheet" type="text/css" />
 ```
 
+You can safely use this templatetag inside a Sekizai's ``{% addtoblock "css" %}`` statement.
+
+
 ## Offline compilation
 
-If you want to precompile all occurences of your SASS/SCSS files, on the command line invoke:
+If you want to precompile all occurrences of your SASS/SCSS files for the whole project, on the
+command line invoke:
 
 ```
 ./manage.py compilescss
@@ -95,15 +98,23 @@ If you want to precompile all occurences of your SASS/SCSS files, on the command
 
 This is useful for preparing production environments, where SASS/SCSS files can't be compiled on
 the fly. To simplify the deployment, the compiled ``*.css`` files are stored side-by-side with their
-corresponding SASS/SCSS files; just run ``./manage.py collectstatic`` the usual way. In case you
+corresponding SASS/SCSS files; just run ``./manage.py collectstatic`` afterwards. In case you
 don't want to expose the SASS/SCSS files in a production environment, deploy with
 ``./manage.py collectstatic --ignore=.scss``.
 
-In case you want to get rid of the compiled ``*.css`` files in your static directories, simply
+In case you want to get rid of the compiled ``*.css`` files in your local static directories, simply
 reverse the above command:
 
 ```
 ./manage.py compilescss --delete-files
 ```
 
-will remove all occurrences of previously generated ``*.css`` files.
+This will remove all occurrences of previously generated ``*.css`` files.
+
+
+## History
+* 0.2.0 Removed dependency to **django-sekizai** and **django-classy-tags**. It now can operate in
+  stand-alone mode. Therefore the project has been renamed to **django-sass-processor**.
+
+0.1.0 Initial revision named **django-sekizai-processors**, based on a preprocessor for the Sekizai
+  template tags ``{% addtoblock %}``.
