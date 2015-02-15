@@ -1,31 +1,38 @@
 # -*- coding: utf-8 -*-
 import os
 import sass
+from optparse import make_option
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template.loader import get_template  # noqa Leave this in to preload template locations
 from django.utils.importlib import import_module
 from compressor.offline.django import DjangoParser
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
-from sekizai_processors.templatetags.sass_tags import SassSrcNode
-from sekizai_processors.storage import find_file
+from sass_processor.templatetags.sass_tags import SassSrcNode
+from sass_processor.storage import find_file
 
 
 class Command(BaseCommand):
     help = "Compile SASS/SCSS into CSS outside of the request/response cycle"
+    option_list = BaseCommand.option_list + (make_option('--delete-files', action='store_true',
+        dest='delete_files', default=False, help='Delete generated `*.css` files instead of creating them.'),)
 
     def __init__(self):
         self.parser = DjangoParser(charset=settings.FILE_CHARSET)
-        self.compiled_files = []
         super(Command, self).__init__()
 
     def handle(self, *args, **options):
-        self.verbosity = int(options.get('verbosity'))
+        self.verbosity = int(options['verbosity'])
+        self.delete_files = options['delete_files']
+        self.compiled_files = []
         templates = self.find_templates()
         for template_name in templates:
             self.parse_template(template_name)
         if self.verbosity > 0:
-            self.stdout.write('Successfully compiled all referred SASS/SCSS files.')
+            if self.delete_files:
+                self.stdout.write('Successfully deleted {0} previously generated `*.css` files.'.format(len(self.compiled_files)))
+            else:
+                self.stdout.write('Successfully compiled {0} referred SASS/SCSS files.'.format(len(self.compiled_files)))
 
     def find_templates(self):
         paths = set()
@@ -90,7 +97,10 @@ class Command(BaseCommand):
             self.stdout.write("Error parsing template %s: %s\n" % (template_name, e))
         else:
             for node in nodes:
-                self.compile(node)
+                if self.delete_files:
+                    self.delete_file(node)
+                else:
+                    self.compile(node)
 
     def compile(self, node):
         sass_filename = find_file(node.path)
@@ -103,7 +113,22 @@ class Command(BaseCommand):
             fh.write(content)
         self.compiled_files.append(sass_filename)
         if self.verbosity > 1:
-            self.stdout.write("Compiled '{0}'\n".format(node.path))
+            self.stdout.write("Compiled SASS/SCSS file: '{0}'\n".format(node.path))
+
+    def delete_file(self, node):
+        """
+        Delete a *.css file, but only if it has been generated through a SASS/SCSS file.
+        """
+        sass_filename = find_file(node.path)
+        if not sass_filename:
+            return
+        basename, _ = os.path.splitext(sass_filename)
+        destpath = basename + '.css'
+        if os.path.isfile(destpath):
+            os.remove(destpath)
+            self.compiled_files.append(sass_filename)
+            if self.verbosity > 1:
+                self.stdout.write("Deleted '{0}'\n".format(destpath))
 
     def walk_nodes(self, node):
         """
