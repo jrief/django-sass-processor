@@ -6,7 +6,6 @@ import json
 import sass
 from django.conf import settings
 from django.contrib.staticfiles.finders import get_finders
-from django.core.files.storage import FileSystemStorage
 from django.core.files.base import ContentFile
 from django.template.base import Context
 from django.template import Template
@@ -15,15 +14,7 @@ from django.utils.six.moves.urllib.parse import urlparse
 from django.utils.six.moves.urllib.request import url2pathname, pathname2url
 from compressor.conf import CompressorConf
 from compressor.utils import get_class
-
-
-class SassFileStorage(FileSystemStorage):
-    def __init__(self, location=None, base_url=None, *args, **kwargs):
-        if location is None:
-            location = getattr(settings, 'SEKIZAI_PROCESSORS_ROOT', settings.STATIC_ROOT)
-        if base_url is None:
-            base_url = settings.STATIC_URL
-        super(SassFileStorage, self).__init__(location, base_url, *args, **kwargs)
+from .storage import SassFileStorage
 
 
 class SCSSProcessor(object):

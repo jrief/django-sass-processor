@@ -3,24 +3,23 @@ import os
 import json
 import sass
 from django.conf import settings
-from django.contrib.staticfiles.finders import get_finders
 from django.core.files.base import ContentFile
-from django.template import Library
+from django.template import Library, Context
 from django.template.base import Node, TemplateSyntaxError
 from django.utils.encoding import iri_to_uri
 from django.utils.six.moves.urllib.parse import urljoin
-from ..sass_preprocessor import SassFileStorage
+from ..storage import SassFileStorage, find_file
 
 register = Library()
 
 
 class SassSrcNode(Node):
     def __init__(self, path):
+        self.storage = SassFileStorage()
         self.include_paths = list(getattr(settings, 'SEKIZAI_PROCESSOR_INCLUDE_DIRS', []))
         self.prefix = iri_to_uri(getattr(settings, 'STATIC_URL', ''))
-        self.storage = SassFileStorage()
-        self.sass_exts = ('.scss', '.sass')
-        self.path = path
+        self._sass_exts = ('.scss', '.sass')
+        self._path = path
 
     @classmethod
     def handle_token(cls, parser, token):
@@ -30,14 +29,18 @@ class SassSrcNode(Node):
         path = parser.compile_filter(bits[1])
         return cls(path)
 
-    def find(self, path):
-        for finder in get_finders():
-            result = finder.find(path)
-            if result:
-                return result
+    @property
+    def path(self):
+        context = Context()
+        return self._path.resolve(context)
+
+    @property
+    def is_sass(self):
+        _, ext = os.path.splitext(self.path)
+        return ext in self._sass_exts
 
     def is_latest(self, sourcemap_filename):
-        sourcemap_file = self.find(sourcemap_filename)
+        sourcemap_file = find_file(sourcemap_filename)
         if not sourcemap_file or not os.path.isfile(sourcemap_file):
             return False
         sourcemap_mtime = os.stat(sourcemap_file).st_mtime
@@ -52,10 +55,10 @@ class SassSrcNode(Node):
         return True
 
     def render(self, context):
-        path = self.path.resolve(context)
+        path = self._path.resolve(context)
         basename, ext = os.path.splitext(path)
         filename = self.find(path)
-        if not filename or ext not in self.sass_exts:
+        if not filename or ext not in self._sass_exts:
             # return the given path
             return urljoin(self.prefix, path)
 

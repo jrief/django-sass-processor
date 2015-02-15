@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 import os
+import sass
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.templatetags.static import StaticNode
+from django.template.loader import get_template  # noqa Leave this in to preload template locations
 from django.utils.importlib import import_module
-from sekizai.templatetags.sekizai_tags import Addtoblock, import_processor
 from compressor.offline.django import DjangoParser
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
+from sekizai_processors.templatetags.sass_tags import SassSrcNode
+from sekizai_processors.storage import find_file
 
 
 class Command(BaseCommand):
-    help = "Compile SASS into CSS outside of the request/response cycle"
+    help = "Compile SASS/SCSS into CSS outside of the request/response cycle"
 
     def __init__(self):
         self.parser = DjangoParser(charset=settings.FILE_CHARSET)
+        self.compiled_files = []
         super(Command, self).__init__()
 
     def handle(self, *args, **options):
@@ -23,7 +25,7 @@ class Command(BaseCommand):
         for template_name in templates:
             self.parse_template(template_name)
         if self.verbosity > 0:
-            self.stdout.write('Successfully compiled all referred .scss files.')
+            self.stdout.write('Successfully compiled all referred SASS/SCSS files.')
 
     def find_templates(self):
         paths = set()
@@ -38,7 +40,7 @@ class Command(BaseCommand):
             raise CommandError("No template paths found. None of the configured template loaders provided template paths")
         templates = set()
         for path in paths:
-            for root, dirs, files in os.walk(path):
+            for root, _, files in os.walk(path):
                 templates.update(os.path.join(root, name)
                     for name in files if not name.startswith('.') and name.endswith('.html'))
         if not templates:
@@ -54,9 +56,9 @@ class Command(BaseCommand):
             except ImportError:
                 from django.template.loader import (find_template_source as finder_func)
             try:
-                # Force django to calculate template_source_loaders from
+                # Force Django to calculate template_source_loaders from
                 # TEMPLATE_LOADERS settings, by asking to find a dummy template
-                source, name = finder_func('test')
+                finder_func('test')
             except TemplateDoesNotExist:
                 pass
         loaders = []
@@ -88,29 +90,28 @@ class Command(BaseCommand):
             self.stdout.write("Error parsing template %s: %s\n" % (template_name, e))
         else:
             for node in nodes:
-                name = node.kwargs['name'].literal
-                name = name and name.strip('"')
-                preprocessor = node.kwargs['preprocessor'].literal or settings.SEKIZAI_PREPROCESSORS.get(name)
-                path = [n.path.var for n in node.nodelist if isinstance(n, StaticNode)]
-                if preprocessor and path:
-                    srcpath = path[0]
-                    processor = import_processor(preprocessor.strip('"'))
-                    func = getattr(processor, 'compile_offline', None)
-                    if callable(func):
-                        destpath = func(srcpath)
-                        if destpath and self.verbosity > 1:
-                            self.stdout.write("Compiled %s\n" % srcpath)
+                self.compile(node)
+
+    def compile(self, node):
+        sass_filename = find_file(node.path)
+        if not sass_filename or sass_filename in self.compiled_files:
+            return
+        content = sass.compile(include_paths=node.include_paths, filename=sass_filename, output_style='compact')
+        basename, _ = os.path.splitext(sass_filename)
+        destpath = basename + '.css'
+        with open(destpath, 'w') as fh:
+            fh.write(content)
+        self.compiled_files.append(sass_filename)
+        if self.verbosity > 1:
+            self.stdout.write("Compiled '{0}'\n".format(node.path))
 
     def walk_nodes(self, node):
         """
-        Iterate over the nodes recursively yielding the templatetag 'addtoblock'
+        Iterate over the nodes recursively yielding the templatetag 'sass_src'
         """
         for node in self.parser.get_nodelist(node):
-            if isinstance(node, Addtoblock):
-                if node.kwargs['preprocessor'].literal:
-                    yield node
-                name = node.kwargs['name'].literal
-                if name and name.strip('"') in settings.SEKIZAI_PREPROCESSORS:
+            if isinstance(node, SassSrcNode):
+                if node.is_sass:
                     yield node
             else:
                 for node in self.walk_nodes(node):
