@@ -58,18 +58,20 @@ class SassSrcNode(Node):
         path = self._path.resolve(context)
         basename, ext = os.path.splitext(path)
         filename = find_file(path)
-        if not filename or ext not in self._sass_exts:
-            # return the given path
+        if ext not in self._sass_exts:
+            # return the given path, since it ends neither in `.scss` nor in `.sass`
             return urljoin(self.prefix, path)
 
         # compare timestamp of sourcemap file with all its dependencies, and check if we must recompile
         css_filename = basename + '.css'
         url = urljoin(self.prefix, css_filename)
+        if not getattr(settings, 'SASS_PROCESSOR_ENABLED', settings.DEBUG):
+            return url
         sourcemap_filename = css_filename + '.map'
         if self.is_latest(sourcemap_filename):
             return url
 
-        # otherwise compile the .scss file into .css and store it
+        # otherwise compile the SASS/SCSS file into .css and store it
         sourcemap_url = self.storage.url(sourcemap_filename)
         content, sourcemap = sass.compile(filename=filename,
             source_map_filename=sourcemap_url, include_paths=self.include_paths)
