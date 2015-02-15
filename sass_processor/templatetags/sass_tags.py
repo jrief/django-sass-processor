@@ -16,7 +16,7 @@ register = Library()
 class SassSrcNode(Node):
     def __init__(self, path):
         self.storage = SassFileStorage()
-        self.include_paths = list(getattr(settings, 'SEKIZAI_PROCESSOR_INCLUDE_DIRS', []))
+        self.include_paths = list(getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', []))
         self.prefix = iri_to_uri(getattr(settings, 'STATIC_URL', ''))
         self._sass_exts = ('.scss', '.sass')
         self._path = path
@@ -24,8 +24,8 @@ class SassSrcNode(Node):
     @classmethod
     def handle_token(cls, parser, token):
         bits = token.split_contents()
-        if len(bits) < 2:
-            raise TemplateSyntaxError("'{0}' takes a path to file as argument".format(*bits))
+        if len(bits) != 2:
+            raise TemplateSyntaxError("'{0}' takes a URL to a CSS file as its only argument".format(*bits))
         path = parser.compile_filter(bits[1])
         return cls(path)
 
@@ -57,7 +57,7 @@ class SassSrcNode(Node):
     def render(self, context):
         path = self._path.resolve(context)
         basename, ext = os.path.splitext(path)
-        filename = self.find(path)
+        filename = find_file(path)
         if not filename or ext not in self._sass_exts:
             # return the given path
             return urljoin(self.prefix, path)

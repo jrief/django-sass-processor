@@ -7,7 +7,7 @@ from django.core.files.storage import FileSystemStorage
 class SassFileStorage(FileSystemStorage):
     def __init__(self, location=None, base_url=None, *args, **kwargs):
         if location is None:
-            location = getattr(settings, 'SEKIZAI_PROCESSORS_ROOT', settings.STATIC_ROOT)
+            location = getattr(settings, 'SASS_PROCESSOR_ROOT', settings.STATIC_ROOT)
         if base_url is None:
             base_url = settings.STATIC_URL
         super(SassFileStorage, self).__init__(location, base_url, *args, **kwargs)
