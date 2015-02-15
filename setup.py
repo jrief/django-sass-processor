@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 from setuptools import setup, find_packages
-from sekizai_processors import __version__
+from sass_processor import __version__
 
 
 CLASSIFIERS = [
@@ -24,18 +24,17 @@ def read(fname):
     return os.popen('[ -x "$(which pandoc 2>/dev/null)" ] && pandoc -t rst {0} || cat {0}'.format(readme_file)).read()
 
 setup(
-    name='django-sekizai-processors',
+    name='django-sass-processor',
     version=__version__,
-    description='Processors to (also offline) compile SASS/SCSS files when used with django-sekizai',
+    description='SASS processor to compile SCSS files into *.css, while rendering, or offline.',
     author='Jacob Rief',
     author_email='jacob.rief@gmail.com',
-    url='https://github.com/jrief/django-sekizai-processors',
+    url='https://github.com/jrief/django-sass-processor',
     packages=find_packages(),
-    install_requires=['django-sekizai'],
     license='LICENSE-MIT',
     platforms=['OS Independent'],
     classifiers=CLASSIFIERS,
     long_description=read('README.md'),
     include_package_data=True,
-    zip_safe=False
+    zip_safe=False,
 )
