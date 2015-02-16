@@ -14,6 +14,14 @@ easier.
 
 With this tool, you can safely remove your Ruby projects “Compass” and “SASS”.
 
+### Project's Home
+
+On GitHub:
+
+https://github.com/jrief/django-sass-processor
+
+Please use the issue tracker to report bugs or propose new features.
+
 ## Installation
 
 ```
@@ -116,5 +124,5 @@ This will remove all occurrences of previously generated ``*.css`` files.
 * 0.2.0 Removed dependency to **django-sekizai** and **django-classy-tags**. It now can operate in
   stand-alone mode. Therefore the project has been renamed to **django-sass-processor**.
 
-0.1.0 Initial revision named **django-sekizai-processors**, based on a preprocessor for the Sekizai
+* 0.1.0 Initial revision named **django-sekizai-processors**, based on a preprocessor for the Sekizai
   template tags ``{% addtoblock %}``.
