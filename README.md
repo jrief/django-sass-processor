@@ -43,7 +43,7 @@ In ``settings.py`` add to:
 ```python
 INSTALLED_APPS = (
     ...
-    'sass_processors',
+    'sass_processor',
     ...
 )
 ```
