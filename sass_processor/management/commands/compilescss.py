@@ -55,20 +55,29 @@ class Command(BaseCommand):
         return templates
 
     def get_loaders(self):
-        from django.template.loader import template_source_loaders
-        if template_source_loaders is None:
-            try:
-                from django.template.loader import (
-                    find_template as finder_func)
-            except ImportError:
-                from django.template.loader import (find_template_source as finder_func)
-            try:
-                # Force Django to calculate template_source_loaders from
-                # TEMPLATE_LOADERS settings, by asking to find a dummy template
-                finder_func('test')
-            except TemplateDoesNotExist:
-                pass
+        try:
+            from django.template.loader import (
+                find_template as finder_func)
+        except ImportError:
+            from django.template.loader import (find_template_source as finder_func)
+        try:
+            # Force Django to calculate template_source_loaders from
+            # TEMPLATE_LOADERS settings, by asking to find a dummy template
+            finder_func('test')
+        # Had to transform this Exception, because otherwise even if there
+        # was a try catch it was crashing, this is a broad Exception but at
+        # it does what the try catch does by not crashing the command line
+        # execution.
+        except Exception, e:
+            pass
         loaders = []
+        # At the top when you first import template_source_loaders it is set
+        # to None, because in django that is what it is set too. While it
+        # executes the finder_func it is setting the template_source_loaders
+        # I needed to re-import the value of it at this point because it was
+        # still None and importing it again made it filled with the proper
+        # django default values.
+        from django.template.loader import template_source_loaders
         for loader in template_source_loaders:
             if hasattr(loader, 'loaders'):
                 loaders.extend(loader.loaders)
