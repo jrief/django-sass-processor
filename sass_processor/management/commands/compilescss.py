@@ -19,6 +19,8 @@ class Command(BaseCommand):
 
     def __init__(self):
         self.parser = DjangoParser(charset=settings.FILE_CHARSET)
+        self.template_exts = getattr(settings, 'SASS_TEMPLATE_EXTS', ['.html'])
+        self.output_style = getattr(settings, 'SASS_OUTPUT_STYLE', 'compact')
         super(Command, self).__init__()
 
     def handle(self, *args, **options):
@@ -49,7 +51,8 @@ class Command(BaseCommand):
         for path in paths:
             for root, _, files in os.walk(path):
                 templates.update(os.path.join(root, name)
-                    for name in files if not name.startswith('.') and name.endswith('.html'))
+                    for name in files if not name.startswith('.') and
+                        any(name.endswith(ext) for ext in self.template_exts))
         if not templates:
             raise CommandError("No templates found. Make sure your TEMPLATE_LOADERS and TEMPLATE_DIRS settings are correct.")
         return templates
@@ -115,7 +118,7 @@ class Command(BaseCommand):
         sass_filename = find_file(node.path)
         if not sass_filename or sass_filename in self.compiled_files:
             return
-        content = sass.compile(include_paths=node.include_paths, filename=sass_filename, output_style='compact')
+        content = sass.compile(include_paths=node.include_paths, filename=sass_filename, output_style=self.output_style)
         basename, _ = os.path.splitext(sass_filename)
         destpath = basename + '.css'
         with open(destpath, 'w') as fh:
