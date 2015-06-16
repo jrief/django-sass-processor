@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template.loader import get_template  # noqa Leave this in to preload template locations
 from django.utils.importlib import import_module
+from django.utils.encoding import force_bytes
 from compressor.offline.django import DjangoParser
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
 from sass_processor.templatetags.sass_tags import SassSrcNode
@@ -122,7 +123,7 @@ class Command(BaseCommand):
         basename, _ = os.path.splitext(sass_filename)
         destpath = basename + '.css'
         with open(destpath, 'w') as fh:
-            fh.write(content)
+            fh.write(force_bytes(content))
         self.compiled_files.append(sass_filename)
         if self.verbosity > 1:
             self.stdout.write("Compiled SASS/SCSS file: '{0}'\n".format(node.path))

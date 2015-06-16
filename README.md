@@ -122,9 +122,20 @@ reverse the above command:
 This will remove all occurrences of previously generated ``*.css`` files.
 
 
-## History
-* 0.2.0 Removed dependency to **django-sekizai** and **django-classy-tags**. It now can operate in
-  stand-alone mode. Therefore the project has been renamed to **django-sass-processor**.
+## Changelog
 
-* 0.1.0 Initial revision named **django-sekizai-processors**, based on a preprocessor for the Sekizai
-  template tags ``{% addtoblock %}``.
+* 0.2.4
+ - Forcing compiled unicode to bytes, since 'Font Awesome' uses Unicode Private Use Area (PUA)
+   and hence implicit conversion on ``fh.write()`` failed.
+
+* 0.2.3 
+ - Allow for setting template extensions and output style.
+ - Force Django to calculate template_source_loaders from TEMPLATE_LOADERS settings, by asking to find a dummy template.
+
+* 0.2.0 
+ - Removed dependency to **django-sekizai** and **django-classy-tags**. It now can operate in
+   stand-alone mode. Therefore the project has been renamed to **django-sass-processor**.
+
+* 0.1.0 
+ - Initial revision named **django-sekizai-processors**, based on a preprocessor for the Sekizai
+   template tags ``{% addtoblock %}``.
