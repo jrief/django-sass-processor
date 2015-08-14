@@ -72,7 +72,7 @@ class Command(BaseCommand):
         # was a try catch it was crashing, this is a broad Exception but at
         # it does what the try catch does by not crashing the command line
         # execution.
-        except Exception, e:
+        except Exception:
             pass
         loaders = []
         # At the top when you first import template_source_loaders it is set
