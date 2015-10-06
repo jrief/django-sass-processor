@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
+from collections import OrderedDict
 from django.conf import settings
 from django.contrib.staticfiles.finders import FileSystemFinder
 from django.core.files.storage import FileSystemStorage
-from django.utils.datastructures import SortedDict
 
 
 class CssFinder(FileSystemFinder):
@@ -20,7 +20,7 @@ class CssFinder(FileSystemFinder):
         self.locations = [
             ('', location),
         ]
-        self.storages = SortedDict()
+        self.storages = OrderedDict()
         filesystem_storage = FileSystemStorage(location=location)
         filesystem_storage.prefix = self.locations[0][0]
         self.storages[location] = filesystem_storage
