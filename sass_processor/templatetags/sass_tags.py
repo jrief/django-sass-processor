@@ -74,10 +74,14 @@ class SassSrcNode(Node):
         if self.is_latest(sourcemap_filename):
             return url
 
+        # add a functions to be used from inside SASS
+        custom_functions = {'get-setting': get_setting}
+
         # otherwise compile the SASS/SCSS file into .css and store it
         sourcemap_url = self.storage.url(sourcemap_filename)
         content, sourcemap = sass.compile(filename=filename,
-            source_map_filename=sourcemap_url, include_paths=self.include_paths)
+            source_map_filename=sourcemap_url, include_paths=self.include_paths,
+            custom_functions=custom_functions)
         if self.storage.exists(css_filename):
             self.storage.delete(css_filename)
         self.storage.save(css_filename, ContentFile(content))
@@ -90,3 +94,10 @@ class SassSrcNode(Node):
 @register.tag(name='sass_src')
 def render_sass_src(parser, token):
     return SassSrcNode.handle_token(parser, token)
+
+
+def get_setting(key):
+    try:
+        return getattr(settings, key)
+    except AttributeError as e:
+        raise TemplateSyntaxError(e.message)
