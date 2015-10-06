@@ -58,6 +58,9 @@ class SassSrcNode(Node):
         path = self._path.resolve(context)
         basename, ext = os.path.splitext(path)
         filename = find_file(path)
+        if filename is None:
+            msg = "Unable to locate file {0} while rendering template {1}".format(path, self.source[0].name)
+            raise TemplateSyntaxError(msg)
         if ext not in self._sass_exts:
             # return the given path, since it ends neither in `.scss` nor in `.sass`
             return urljoin(self.prefix, path)
