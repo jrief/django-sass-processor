@@ -122,7 +122,41 @@ reverse the above command:
 This will remove all occurrences of previously generated ``*.css`` files.
 
 
+## Configure SASS variables through settings.py
+
+In SASS, a nasty problem is to set the correct include paths for icons and fonts. Normally this is
+done through a ``_variables.scss`` file, but this inhibits a configuration through your projects
+``settings.py``.
+
+Starting with version 0.2.5 **django-sass-processor** offers a SASS function to fetch any arbitrary
+configuration from ``settings.py``. This is specially handy for setting the include path of your
+Glyphicons font directory. Assume you installed Bootstrap SASS files using
+``npm install bootstrap-sass``, then locate your ``node_modules`` folder and add this to your
+``settings.py``:
+
+```
+NODE_MODULES_PATH = '/path/to/your/projects/node_modules/'
+```
+
+Now you can override the any SASS variable with a configurable value. For the Glyphicons font search
+path, add this to your ``_variables.scss``:
+
+```
+$icon-font-path: unquote(get-setting(NODE_MODULES_URL) + "bootstrap-sass/assets/fonts/bootstrap/");
+```
+
+and ``@import "variables";`` whenever you need Glyphicons. You then can safely remove any
+font references, such as ``<link href="/path/to/your/fonts/bootstrap/glyphicons-whatever.ttf" ...>``
+from you HTML templates.
+
+
 ## Changelog
+
+* 0.2.5
+ - Compatible with Python3
+ - Replaced ``SortedDict`` with ``OrderedDict`` to be prepared for Django-1.9
+ - Raise a ``TemplateSyntax`` error, if a SASS ``@include "..."`` fails to find the file.
+ - Added SASS function ``get-setting`` to fetch configuration directives from ``settings.py``.
 
 * 0.2.4
  - Forcing compiled unicode to bytes, since 'Font Awesome' uses Unicode Private Use Area (PUA)
