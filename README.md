@@ -132,14 +132,21 @@ Starting with version 0.2.5 **django-sass-processor** offers a SASS function to 
 configuration from ``settings.py``. This is specially handy for setting the include path of your
 Glyphicons font directory. Assume you installed Bootstrap SASS files using
 ``npm install bootstrap-sass``, then locate your ``node_modules`` folder and add this to your
-``settings.py``:
+``settings.py``, so that your fonts are accessible through the Django's ``StaticFileFinder``:
 
 ```
-NODE_MODULES_PATH = '/path/to/your/projects/node_modules/'
+STATICFILES_DIRS = (
+    ...
+    ('node_modules', '/path/to/your/project/node_modules/'),
+    ...
+)
+
+NODE_MODULES_URL = STATIC_URL + 'node_modules/'
+
 ```
 
-Now you can override the any SASS variable with a configurable value. For the Glyphicons font search
-path, add this to your ``_variables.scss``:
+With the SASS function ``get-setting``, you now can override any SASS variable with a configurable
+value. For the Glyphicons font search path, add this to your ``_variables.scss``:
 
 ```
 $icon-font-path: unquote(get-setting(NODE_MODULES_URL) + "bootstrap-sass/assets/fonts/bootstrap/");
