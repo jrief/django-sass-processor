@@ -18,6 +18,12 @@ class SassSrcNode(Node):
         self.storage = SassFileStorage()
         self.include_paths = list(getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', []))
         self.prefix = iri_to_uri(getattr(settings, 'STATIC_URL', ''))
+        precision = getattr(settings, 'SASS_PRECISION', None)
+        self.sass_precision = int(precision) if precision else None
+        self.sass_output_style = getattr(
+            settings,
+            'SASS_OUTPUT_STYLE',
+            'nested' if settings.DEBUG else 'compressed')
         self._sass_exts = ('.scss', '.sass')
         self._path = path
 
@@ -79,9 +85,17 @@ class SassSrcNode(Node):
 
         # otherwise compile the SASS/SCSS file into .css and store it
         sourcemap_url = self.storage.url(sourcemap_filename)
-        content, sourcemap = sass.compile(filename=filename,
-            source_map_filename=sourcemap_url, include_paths=self.include_paths,
-            custom_functions=custom_functions)
+        compile_kwargs = {
+            'filename': filename,
+            'source_map_filename': sourcemap_url,
+            'include_paths': self.include_paths,
+            'custom_functions': custom_functions,
+        }
+        if self.sass_precision:
+            compile_kwargs['precision'] = self.sass_precision
+        if self.sass_output_style:
+            compile_kwargs['output_style'] = self.sass_output_style
+        content, sourcemap = sass.compile(**compile_kwargs)
         if self.storage.exists(css_filename):
             self.storage.delete(css_filename)
         self.storage.save(css_filename, ContentFile(content))

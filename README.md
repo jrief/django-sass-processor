@@ -68,7 +68,8 @@ writable by the Django runserver.
 
 **django-sass-processor** is shipped with a special finder, to locate the generated ``*.css`` files
 in the folder referred by ``SASS_PROCESSOR_ROOT`` (or, if unset ``STATIC_ROOT``). Just add it to
-your ``settings.py``: 
+your ``settings.py``. If there is no ``STATICFILES_FINDERS`` setting in your ``settings.py`` don't
+forget to include **django** [default finders](https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-STATICFILES_FINDERS).
 
 ```
 STATICFILES_FINDERS = (
@@ -76,6 +77,27 @@ STATICFILES_FINDERS = (
     'sass_processor.finders.CssFinder',
     ...
 )
+```
+
+You may fine tune sass compiler parameters in your `settings.py`.
+
+Integer `SASS_PRECISION` sets floating point precision for output css. libsass'
+default is ``5``. Note: **bootstrap-sass** requires ``8``, otherwise various
+layout problems _will_ occur.
+```
+SASS_PRECISION = 8
+```
+
+`SASS_OUTPUT_STYLE` sets coding style of the compiled result, one of ``compact``,
+``compressed``, ``expanded``, or ``nested``. Default is ``nested`` for ``DEBUG``
+and ``compressed`` in production.
+
+Note: **libsass-python** 0.8.3 has [problem encoding result while saving on
+Windows](https://github.com/dahlia/libsass-python/pull/82), the issue is already
+fixed and will be included in future `pip` package release, in the meanwhile
+avoid ``compressed`` output style.
+```
+SASS_OUTPUT_STYLE = 'compact'
 ```
 
 ## Preprocessing SASS
