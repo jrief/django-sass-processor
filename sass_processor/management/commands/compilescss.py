@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import django
 import sass
 from optparse import make_option
 from django.conf import settings
@@ -7,7 +8,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.template.loader import get_template  # noqa Leave this in to preload template locations
 from django.utils.importlib import import_module
 from django.utils.encoding import force_bytes
-from compressor.offline.django import DjangoParser
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
 from sass_processor.templatetags.sass_tags import SassSrcNode
 from sass_processor.storage import find_file
@@ -15,11 +15,22 @@ from sass_processor.storage import find_file
 
 class Command(BaseCommand):
     help = "Compile SASS/SCSS into CSS outside of the request/response cycle"
-    option_list = BaseCommand.option_list + (make_option('--delete-files', action='store_true',
-        dest='delete_files', default=False, help='Delete generated `*.css` files instead of creating them.'),)
+    option_list = BaseCommand.option_list + (
+        make_option(
+            '--delete-files',
+            action='store_true',
+            dest='delete_files',
+            default=False,
+            help='Delete generated `*.css` files instead of creating them.'),
+        make_option(
+            '--engine',
+            dest='engine',
+            default='django',
+            help='Set templating engine used (django, jinja2). Default: django.'),
+    )
 
     def __init__(self):
-        self.parser = DjangoParser(charset=settings.FILE_CHARSET)
+        self.parser = None
         self.template_exts = getattr(settings, 'SASS_TEMPLATE_EXTS', ['.html'])
         self.output_style = getattr(settings, 'SASS_OUTPUT_STYLE', 'compact')
         super(Command, self).__init__()
@@ -27,6 +38,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.verbosity = int(options['verbosity'])
         self.delete_files = options['delete_files']
+        self.parser = self.get_parser(options['engine'])
         self.compiled_files = []
         templates = self.find_templates()
         for template_name in templates:
@@ -36,6 +48,19 @@ class Command(BaseCommand):
                 self.stdout.write('Successfully deleted {0} previously generated `*.css` files.'.format(len(self.compiled_files)))
             else:
                 self.stdout.write('Successfully compiled {0} referred SASS/SCSS files.'.format(len(self.compiled_files)))
+
+    def get_parser(self, engine):
+        if engine == "jinja2":
+            from compressor.offline.jinja2 import Jinja2Parser
+            env = settings.COMPRESS_JINJA2_GET_ENVIRONMENT()
+            parser = Jinja2Parser(charset=settings.FILE_CHARSET, env=env)
+        elif engine == "django":
+            from compressor.offline.django import DjangoParser
+            parser = DjangoParser(charset=settings.FILE_CHARSET)
+        else:
+            raise CommandError("Invalid templating engine '{}' specified.".format(engine))
+
+        return parser
 
     def find_templates(self):
         paths = set()
@@ -59,29 +84,43 @@ class Command(BaseCommand):
         return templates
 
     def get_loaders(self):
-        try:
-            from django.template.loader import (
-                find_template as finder_func)
-        except ImportError:
-            from django.template.loader import (find_template_source as finder_func)
-        try:
-            # Force Django to calculate template_source_loaders from
-            # TEMPLATE_LOADERS settings, by asking to find a dummy template
-            finder_func('test')
-        # Had to transform this Exception, because otherwise even if there
-        # was a try catch it was crashing, this is a broad Exception but at
-        # it does what the try catch does by not crashing the command line
-        # execution.
-        except Exception:
-            pass
+        if django.VERSION < (1, 8):
+            from django.template.loader import template_source_loaders
+            if template_source_loaders is None:
+                try:
+                    from django.template.loader import (
+                        find_template as finder_func)
+                except ImportError:
+                    from django.template.loader import (
+                        find_template_source as finder_func)  # noqa
+                try:
+                    # Force django to calculate template_source_loaders from
+                    # TEMPLATE_LOADERS settings, by asking to find a dummy template
+                    source, name = finder_func('test')
+                except django.template.TemplateDoesNotExist:
+                    pass
+                # Reload template_source_loaders now that it has been calculated ;
+                # it should contain the list of valid, instanciated template loaders
+                # to use.
+                from django.template.loader import template_source_loaders
+        else:
+            from django.template import engines
+            template_source_loaders = []
+            for e in engines.all():
+                template_source_loaders.extend(e.engine.get_template_loaders(e.engine.loaders))
         loaders = []
-        # At the top when you first import template_source_loaders it is set
-        # to None, because in django that is what it is set too. While it
-        # executes the finder_func it is setting the template_source_loaders
-        # I needed to re-import the value of it at this point because it was
-        # still None and importing it again made it filled with the proper
-        # django default values.
-        from django.template.loader import template_source_loaders
+        # If template loader is CachedTemplateLoader, return the loaders
+        # that it wraps around. So if we have
+        # TEMPLATE_LOADERS = (
+        #    ('django.template.loaders.cached.Loader', (
+        #        'django.template.loaders.filesystem.Loader',
+        #        'django.template.loaders.app_directories.Loader',
+        #    )),
+        # )
+        # The loaders will return django.template.loaders.filesystem.Loader
+        # and django.template.loaders.app_directories.Loader
+        # The cached Loader and similar ones include a 'loaders' attribute
+        # so we look for that.
         for loader in template_source_loaders:
             if hasattr(loader, 'loaders'):
                 loaders.extend(loader.loaders)
@@ -104,7 +143,7 @@ class Command(BaseCommand):
         except UnicodeDecodeError:
             self.stdout.write("UnicodeDecodeError while trying to read template %s\n" % template_name)
         try:
-            nodes = list(self.walk_nodes(template))
+            nodes = list(self.walk_nodes(template, original=template))
         except Exception as e:
             # Could be an error in some base template
             self.stdout.write("Error parsing template %s: %s\n" % (template_name, e))
@@ -122,7 +161,7 @@ class Command(BaseCommand):
         content = sass.compile(include_paths=node.include_paths, filename=sass_filename, output_style=self.output_style)
         basename, _ = os.path.splitext(sass_filename)
         destpath = basename + '.css'
-        with open(destpath, 'w') as fh:
+        with open(destpath, 'wb') as fh:
             fh.write(force_bytes(content))
         self.compiled_files.append(sass_filename)
         if self.verbosity > 1:
@@ -143,14 +182,14 @@ class Command(BaseCommand):
             if self.verbosity > 1:
                 self.stdout.write("Deleted '{0}'\n".format(destpath))
 
-    def walk_nodes(self, node):
+    def walk_nodes(self, node, original):
         """
         Iterate over the nodes recursively yielding the templatetag 'sass_src'
         """
-        for node in self.parser.get_nodelist(node):
+        for node in self.parser.get_nodelist(node, original=original):
             if isinstance(node, SassSrcNode):
                 if node.is_sass:
                     yield node
             else:
-                for node in self.walk_nodes(node):
+                for node in self.walk_nodes(node, original=original):
                     yield node
