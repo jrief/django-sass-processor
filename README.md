@@ -143,6 +143,10 @@ reverse the above command:
 
 This will remove all occurrences of previously generated ``*.css`` files.
 
+If you use an alternative templating engine (django 1.8+) set its name in ``--engine`` argument.
+``django`` and ``jinja2`` is supported, see [django-compressor documentation](http://django-compressor.readthedocs.org/en/latest/)
+on how to set up ``COMPRESS_JINJA2_GET_ENVIRONMENT`` to configure jinja2 engine support.
+
 
 ## Configure SASS variables through settings.py
 
