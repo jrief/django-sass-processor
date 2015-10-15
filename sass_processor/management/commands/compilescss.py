@@ -32,7 +32,9 @@ class Command(BaseCommand):
     def __init__(self):
         self.parser = None
         self.template_exts = getattr(settings, 'SASS_TEMPLATE_EXTS', ['.html'])
-        self.output_style = getattr(settings, 'SASS_OUTPUT_STYLE', 'compact')
+        self.sass_output_style = getattr(settings, 'SASS_OUTPUT_STYLE', 'compact')
+        precision = getattr(settings, 'SASS_PRECISION', None)
+        self.sass_precision = int(precision) if precision else None
         super(Command, self).__init__()
 
     def handle(self, *args, **options):
@@ -158,7 +160,16 @@ class Command(BaseCommand):
         sass_filename = find_file(node.path)
         if not sass_filename or sass_filename in self.compiled_files:
             return
-        content = sass.compile(include_paths=node.include_paths, filename=sass_filename, output_style=self.output_style)
+
+        compile_kwargs = {
+            'filename': sass_filename,
+            'include_paths': node.include_paths,
+        }
+        if self.sass_precision:
+            compile_kwargs['precision'] = self.sass_precision
+        if self.sass_output_style:
+            compile_kwargs['output_style'] = self.sass_output_style
+        content = sass.compile(**compile_kwargs)
         basename, _ = os.path.splitext(sass_filename)
         destpath = basename + '.css'
         with open(destpath, 'wb') as fh:
