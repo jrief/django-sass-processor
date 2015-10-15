@@ -23,6 +23,13 @@ class Command(BaseCommand):
             default=False,
             help='Delete generated `*.css` files instead of creating them.'),
         make_option(
+            '--use-processor-root',
+            action='store_true',
+            dest='use_processor_root',
+            default=False,
+            help='Store resulting .css in settings.SASS_PROCESSOR_ROOT folder. '
+                 'Default: store each css side-by-side with .scss.'),
+        make_option(
             '--engine',
             dest='engine',
             default='django',
@@ -35,11 +42,16 @@ class Command(BaseCommand):
         self.sass_output_style = getattr(settings, 'SASS_OUTPUT_STYLE', 'compact')
         precision = getattr(settings, 'SASS_PRECISION', None)
         self.sass_precision = int(precision) if precision else None
+        self.use_static_root = False
+        self.static_root = ''
         super(Command, self).__init__()
 
     def handle(self, *args, **options):
         self.verbosity = int(options['verbosity'])
         self.delete_files = options['delete_files']
+        self.use_static_root = options['use_processor_root']
+        if self.use_static_root:
+            self.static_root = getattr(settings, 'SASS_PROCESSOR_ROOT', settings.STATIC_ROOT)
         self.parser = self.get_parser(options['engine'])
         self.compiled_files = []
         templates = self.find_templates()
@@ -170,8 +182,7 @@ class Command(BaseCommand):
         if self.sass_output_style:
             compile_kwargs['output_style'] = self.sass_output_style
         content = sass.compile(**compile_kwargs)
-        basename, _ = os.path.splitext(sass_filename)
-        destpath = basename + '.css'
+        destpath = self.get_destination(sass_filename)
         with open(destpath, 'wb') as fh:
             fh.write(force_bytes(content))
         self.compiled_files.append(sass_filename)
@@ -185,13 +196,22 @@ class Command(BaseCommand):
         sass_filename = find_file(node.path)
         if not sass_filename:
             return
-        basename, _ = os.path.splitext(sass_filename)
-        destpath = basename + '.css'
+        destpath = self.get_destination(sass_filename)
         if os.path.isfile(destpath):
             os.remove(destpath)
             self.compiled_files.append(sass_filename)
             if self.verbosity > 1:
                 self.stdout.write("Deleted '{0}'\n".format(destpath))
+
+    def get_destination(self, source):
+        if not self.use_static_root:
+            basename, _ = os.path.splitext(source)
+            destpath = basename + '.css'
+        else:
+            basename, _ = os.path.splitext(os.path.basename(source))
+            destpath = os.path.join(self.static_root, basename + '.css')
+
+        return destpath
 
     def walk_nodes(self, node, original):
         """

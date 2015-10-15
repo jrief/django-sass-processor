@@ -140,8 +140,15 @@ reverse the above command:
 ```
 ./manage.py compilescss --delete-files
 ```
-
 This will remove all occurrences of previously generated ``*.css`` files.
+
+Or you may direct compilation results to ``SASS_PROCESSOR_ROOT`` directory
+(if not specified - to ``STATIC_ROOT``):
+
+```
+./manage.py compilescss --use-processor-root
+```
+Combine with ``--delete-files`` switch to purge results from there.
 
 If you use an alternative templating engine (django 1.8+) set its name in ``--engine`` argument.
 ``django`` and ``jinja2`` is supported, see [django-compressor documentation](http://django-compressor.readthedocs.org/en/latest/)
