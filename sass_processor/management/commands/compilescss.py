@@ -11,6 +11,7 @@ from django.utils.encoding import force_bytes
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
 from sass_processor.templatetags.sass_tags import SassSrcNode
 from sass_processor.storage import find_file
+from sass_processor.utils import get_setting
 
 
 class Command(BaseCommand):
@@ -173,9 +174,13 @@ class Command(BaseCommand):
         if not sass_filename or sass_filename in self.compiled_files:
             return
 
+        # add a functions to be used from inside SASS
+        custom_functions = {'get-setting': get_setting}
+
         compile_kwargs = {
             'filename': sass_filename,
             'include_paths': node.include_paths,
+            'custom_functions': custom_functions,
         }
         if self.sass_precision:
             compile_kwargs['precision'] = self.sass_precision

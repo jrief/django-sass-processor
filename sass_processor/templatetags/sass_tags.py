@@ -8,6 +8,7 @@ from django.template import Library, Context
 from django.template.base import Node, TemplateSyntaxError
 from django.utils.encoding import iri_to_uri
 from django.utils.six.moves.urllib.parse import urljoin
+from sass_processor.utils import get_setting
 from ..storage import SassFileStorage, find_file
 
 register = Library()
@@ -108,10 +109,3 @@ class SassSrcNode(Node):
 @register.tag(name='sass_src')
 def render_sass_src(parser, token):
     return SassSrcNode.handle_token(parser, token)
-
-
-def get_setting(key):
-    try:
-        return getattr(settings, key)
-    except AttributeError as e:
-        raise TemplateSyntaxError(e.message)
