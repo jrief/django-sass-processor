@@ -132,9 +132,11 @@ done through a ``_variables.scss`` file, but this inhibits a configuration throu
 Starting with version 0.2.5 **django-sass-processor** offers a SASS function to fetch any arbitrary
 configuration from ``settings.py``. This is specially handy for setting the include path of your
 Glyphicons font directory. Assume you installed Bootstrap SASS files using
-``npm install bootstrap-sass``, then locate your ``node_modules`` folder and add it to your
-``settings.py``, so that your fonts are accessible through the Django's
-``django.contrib.staticfiles.finders.FileSystemFinder``:
+
+```npm install bootstrap-sass```
+
+then locate your ``node_modules`` folder and add it to your ``settings.py``, so that your fonts are
+accessible through the Django's ``django.contrib.staticfiles.finders.FileSystemFinder``:
 
 ```
 STATICFILES_DIRS = (
