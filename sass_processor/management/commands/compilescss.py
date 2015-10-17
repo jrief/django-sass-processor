@@ -9,7 +9,7 @@ from django.utils.importlib import import_module
 from django.utils.encoding import force_bytes
 from compressor.offline.django import DjangoParser
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
-from sass_processor.templatetags.sass_tags import SassSrcNode
+from sass_processor.templatetags.sass_tags import SassSrcNode, get_setting
 from sass_processor.storage import find_file
 
 
@@ -119,7 +119,9 @@ class Command(BaseCommand):
         sass_filename = find_file(node.path)
         if not sass_filename or sass_filename in self.compiled_files:
             return
-        content = sass.compile(include_paths=node.include_paths, filename=sass_filename, output_style=self.output_style)
+        custom_functions = {'get-setting': get_setting}
+        content = sass.compile(include_paths=node.include_paths, filename=sass_filename,
+            custom_functions=custom_functions, output_style=self.output_style)
         basename, _ = os.path.splitext(sass_filename)
         destpath = basename + '.css'
         with open(destpath, 'w') as fh:

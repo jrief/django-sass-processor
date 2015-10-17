@@ -163,6 +163,9 @@ from you HTML templates.
 
 ## Changelog
 
+* 0.2.6
+ - Hotfix: added SASS function ``get-setting`` also to offline compiler.
+
 * 0.2.5
  - Compatible with Python3
  - Replaced ``SortedDict`` with ``OrderedDict`` to be prepared for Django-1.9
