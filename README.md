@@ -122,6 +122,13 @@ reverse the above command:
 
 This will remove all occurrences of previously generated ``*.css`` files.
 
+By default, **django-sass-processor** will locate SASS/SCSS files from .html and .jade templates,
+but you can extend or override this behavior. Just use the following syntax in ``settings.py``: 
+
+```
+SASS_TEMPLATE_EXTS = ['.html,'.jade']
+```
+
 
 ## Configure SASS variables through settings.py
 
