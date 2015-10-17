@@ -20,7 +20,7 @@ class Command(BaseCommand):
 
     def __init__(self):
         self.parser = DjangoParser(charset=settings.FILE_CHARSET)
-        self.template_exts = getattr(settings, 'SASS_TEMPLATE_EXTS', ['.html'])
+        self.template_exts = getattr(settings, 'SASS_TEMPLATE_EXTS', ['.html','.jade'])
         self.output_style = getattr(settings, 'SASS_OUTPUT_STYLE', 'compact')
         super(Command, self).__init__()
 
