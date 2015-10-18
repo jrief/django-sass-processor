@@ -15,7 +15,7 @@ CLASSIFIERS = [
     'Programming Language :: Python',
     'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     'Programming Language :: Python :: 2.7',
-    # not tested: 'Programming Language :: Python :: 3.3',
+    'Programming Language :: Python :: 3',
 ]
 
 

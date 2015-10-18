@@ -196,6 +196,11 @@ from you HTML templates.
 
 ## Changelog
 
+* 0.3.0
+ - Compatible with Django 1.8+.
+ - bootstrap3-sass ready: appropriate floating point precision (8) can be set in ``settings.py``.
+ - Offline compilation results may optionally be stored in ``SASS_PROCESSOR_ROOT``.
+
 * 0.2.6
  - Hotfix: added SASS function ``get-setting`` also to offline compiler.
 
