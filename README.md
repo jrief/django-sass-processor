@@ -68,7 +68,8 @@ writable by the Django runserver.
 
 **django-sass-processor** is shipped with a special finder, to locate the generated ``*.css`` files
 in the folder referred by ``SASS_PROCESSOR_ROOT`` (or, if unset ``STATIC_ROOT``). Just add it to
-your ``settings.py``: 
+your ``settings.py``. If there is no ``STATICFILES_FINDERS`` setting in your ``settings.py`` don't
+forget to include **django** [default finders](https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-STATICFILES_FINDERS).
 
 ```
 STATICFILES_FINDERS = (
@@ -77,6 +78,27 @@ STATICFILES_FINDERS = (
     'sass_processor.finders.CssFinder',
     ...
 )
+```
+
+You may fine tune sass compiler parameters in your `settings.py`.
+
+Integer `SASS_PRECISION` sets floating point precision for output css. libsass'
+default is ``5``. Note: **bootstrap-sass** requires ``8``, otherwise various
+layout problems _will_ occur.
+```
+SASS_PRECISION = 8
+```
+
+`SASS_OUTPUT_STYLE` sets coding style of the compiled result, one of ``compact``,
+``compressed``, ``expanded``, or ``nested``. Default is ``nested`` for ``DEBUG``
+and ``compressed`` in production.
+
+Note: **libsass-python** 0.8.3 has [problem encoding result while saving on
+Windows](https://github.com/dahlia/libsass-python/pull/82), the issue is already
+fixed and will be included in future `pip` package release, in the meanwhile
+avoid ``compressed`` output style.
+```
+SASS_OUTPUT_STYLE = 'compact'
 ```
 
 ## Preprocessing SASS
@@ -119,8 +141,19 @@ reverse the above command:
 ```
 ./manage.py compilescss --delete-files
 ```
-
 This will remove all occurrences of previously generated ``*.css`` files.
+
+Or you may direct compilation results to ``SASS_PROCESSOR_ROOT`` directory
+(if not specified - to ``STATIC_ROOT``):
+
+```
+./manage.py compilescss --use-processor-root
+```
+Combine with ``--delete-files`` switch to purge results from there.
+
+If you use an alternative templating engine (django 1.8+) set its name in ``--engine`` argument.
+``django`` and ``jinja2`` is supported, see [django-compressor documentation](http://django-compressor.readthedocs.org/en/latest/)
+on how to set up ``COMPRESS_JINJA2_GET_ENVIRONMENT`` to configure jinja2 engine support.
 
 
 ## Configure SASS variables through settings.py
