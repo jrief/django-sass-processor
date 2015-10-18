@@ -156,6 +156,16 @@ If you use an alternative templating engine (django 1.8+) set its name in ``--en
 on how to set up ``COMPRESS_JINJA2_GET_ENVIRONMENT`` to configure jinja2 engine support.
 
 
+### Alternative templates
+
+By default, **django-sass-processor** will locate SASS/SCSS files from .html templates,
+but you can extend or override this behavior. Just use the following syntax in ``settings.py``: 
+
+```
+SASS_TEMPLATE_EXTS = ['.html','.jade']
+```
+
+
 ## Configure SASS variables through settings.py
 
 In SASS, a nasty problem is to set the correct include paths for icons and fonts. Normally this is
