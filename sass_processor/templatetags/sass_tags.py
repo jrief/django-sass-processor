@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
 import json
-import sass
+try:
+    import sass
+except ImportError:
+    sass = None
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.core.exceptions import ImproperlyConfigured
 from django.template import Library, Context
 from django.template.base import Node, TemplateSyntaxError
 from django.utils.encoding import iri_to_uri
@@ -80,6 +84,10 @@ class SassSrcNode(Node):
         sourcemap_filename = css_filename + '.map'
         if self.is_latest(sourcemap_filename):
             return url
+
+        # with offline compilation, raise an error, if css file could not be found.
+        if sass is None:
+            raise ImproperlyConfigured("Offline compiled file `{}` is missing and libsass has not been installed.".format(css_filename))
 
         # add a functions to be used from inside SASS
         custom_functions = {'get-setting': get_setting}
