@@ -90,6 +90,7 @@ class Command(BaseCommand):
             raise CommandError("No template paths found. None of the configured template loaders provided template paths")
         templates = set()
         for path in paths:
+            print path
             for root, _, files in os.walk(path):
                 templates.update(os.path.join(root, name)
                     for name in files if not name.startswith('.') and
