@@ -91,7 +91,7 @@ class Command(BaseCommand):
         templates = set()
         for path in paths:
             print path
-            for root, _, files in os.walk(path):
+            for root, _, files in os.walk(str(path)):
                 templates.update(os.path.join(root, name)
                     for name in files if not name.startswith('.') and
                         any(name.endswith(ext) for ext in self.template_exts))
