@@ -6,7 +6,7 @@ from optparse import make_option
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template.loader import get_template  # noqa Leave this in to preload template locations
-from django.utils.importlib import import_module
+from importlib import import_module
 from django.utils.encoding import force_bytes
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
 from sass_processor.templatetags.sass_tags import SassSrcNode
@@ -90,7 +90,7 @@ class Command(BaseCommand):
             raise CommandError("No template paths found. None of the configured template loaders provided template paths")
         templates = set()
         for path in paths:
-            for root, _, files in os.walk(path):
+            for root, _, files in os.walk(str(path)):
                 templates.update(os.path.join(root, name)
                     for name in files if not name.startswith('.') and
                         any(name.endswith(ext) for ext in self.template_exts))
