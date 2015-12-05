@@ -7,8 +7,8 @@ try:
     from pypandoc import convert
 except ImportError:
     def convert(filename, fmt):
-        with open(filename) as fd:
-            return fd.read()
+        with open(filename, 'r') as fd:
+            return str(fd.read())
 
 
 CLASSIFIERS = [
