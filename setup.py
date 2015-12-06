@@ -7,7 +7,7 @@ try:
     from pypandoc import convert
 except ImportError:
     def convert(filename, fmt):
-        with open(filename, 'r') as fd:
+        with open(filename, 'rb') as fd:
             return str(fd.read())
 
 
