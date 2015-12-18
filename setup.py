@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
 from setuptools import setup, find_packages
 from sass_processor import __version__
 try:
@@ -10,8 +11,7 @@ except ImportError:
 
     def convert(filename, fmt):
         with io.open(filename, encoding='utf-8') as fd:
-            return str(fd.read())
-
+            return fd.read()
 
 CLASSIFIERS = [
     'Development Status :: 4 - Beta',
@@ -25,7 +25,6 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
 ]
-
 
 setup(
     name='django-sass-processor',
