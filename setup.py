@@ -6,8 +6,10 @@ from sass_processor import __version__
 try:
     from pypandoc import convert
 except ImportError:
+    import io
+
     def convert(filename, fmt):
-        with open(filename, 'r') as fd:
+        with io.open(filename, encoding='utf-8') as fd:
             return str(fd.read())
 
 
