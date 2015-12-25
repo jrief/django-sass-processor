@@ -40,7 +40,8 @@ class Command(BaseCommand):
     def __init__(self):
         self.parser = None
         self.template_exts = getattr(settings, 'SASS_TEMPLATE_EXTS', ['.html'])
-        self.sass_output_style = getattr(settings, 'SASS_OUTPUT_STYLE', 'compact')
+        self.sass_output_style = getattr(settings, 'SASS_OUTPUT_STYLE',
+            'nested' if settings.DEBUG else 'compressed')
         precision = getattr(settings, 'SASS_PRECISION', None)
         self.sass_precision = int(precision) if precision else None
         self.use_static_root = False
