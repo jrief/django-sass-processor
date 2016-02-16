@@ -85,7 +85,7 @@ class Command(BaseCommand):
                 module = import_module(loader.__module__)
                 get_template_sources = getattr(module, 'get_template_sources', loader.get_template_sources)
                 template_sources = list(get_template_sources(''))
-                if template_sources and type(template_sources[0]) is Origin:
+                if template_sources and isinstance(template_sources[0], Origin):
                     template_sources = [origin.name for origin in template_sources]
                 paths.update(template_sources)
             except (ImportError, AttributeError):
