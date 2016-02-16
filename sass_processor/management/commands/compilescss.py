@@ -5,6 +5,7 @@ import sass
 from optparse import make_option
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.template.base import Origin
 from django.template.loader import get_template  # noqa Leave this in to preload template locations
 from importlib import import_module
 from django.utils.encoding import force_bytes
@@ -84,7 +85,10 @@ class Command(BaseCommand):
             try:
                 module = import_module(loader.__module__)
                 get_template_sources = getattr(module, 'get_template_sources', loader.get_template_sources)
-                paths.update(list(get_template_sources('')))
+                template_sources = list(get_template_sources(''))
+                if template_sources and isinstance(template_sources[0], Origin):
+                    template_sources = [origin.name for origin in template_sources]
+                paths.update(template_sources)
             except (ImportError, AttributeError):
                 pass
         if not paths:
