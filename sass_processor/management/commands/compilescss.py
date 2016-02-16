@@ -5,7 +5,8 @@ import sass
 from optparse import make_option
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.template.loader import get_template, Origin  # noqa Leave get_template in to preload template locations
+from django.template.base import Origin
+from django.template.loader import get_template  # noqa Leave this in to preload template locations
 from importlib import import_module
 from django.utils.encoding import force_bytes
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
