@@ -206,6 +206,13 @@ from you HTML templates.
 
 ## Changelog
 
+* 0.3.4
+ - Fixed: ``get_template_sources()`` in Django-1.9 returns Objects rather than strings.
+ - In command, use ``ArgumentParser`` rather than ``OptionParser``.
+
+* 0.3.1...0.3.3
+ - Changed the build process in ``setup.py``.
+
 * 0.3.0
  - Compatible with Django 1.8+.
  - bootstrap3-sass ready: appropriate floating point precision (8) can be set in ``settings.py``.
