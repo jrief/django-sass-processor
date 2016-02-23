@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template.loader import get_template  # noqa Leave this in to preload template locations
 from importlib import import_module
+from django.template.base import Origin
 from django.utils.encoding import force_bytes
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
 from sass_processor.templatetags.sass_tags import SassSrcNode
@@ -84,7 +85,8 @@ class Command(BaseCommand):
             try:
                 module = import_module(loader.__module__)
                 get_template_sources = getattr(module, 'get_template_sources', loader.get_template_sources)
-                paths.update(list(get_template_sources('')))
+                template_sources = get_template_sources('')
+                paths.update([t.name if isinstance(t, Origin) else t for t in template_sources])
             except (ImportError, AttributeError):
                 pass
         if not paths:
