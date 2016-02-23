@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import os
 import django
 import sass
@@ -9,6 +11,7 @@ from django.template.loader import get_template  # noqa Leave this in to preload
 from importlib import import_module
 from django.template.base import Origin
 from django.utils.encoding import force_bytes
+from django.utils.translation import gettext_lazy as _
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
 from sass_processor.templatetags.sass_tags import SassSrcNode
 from sass_processor.storage import find_file
@@ -17,26 +20,6 @@ from sass_processor.utils import get_setting
 
 class Command(BaseCommand):
     help = "Compile SASS/SCSS into CSS outside of the request/response cycle"
-    option_list = BaseCommand.option_list + (
-        make_option(
-            '--delete-files',
-            action='store_true',
-            dest='delete_files',
-            default=False,
-            help='Delete generated `*.css` files instead of creating them.'),
-        make_option(
-            '--use-processor-root',
-            action='store_true',
-            dest='use_processor_root',
-            default=False,
-            help='Store resulting .css in settings.SASS_PROCESSOR_ROOT folder. '
-                 'Default: store each css side-by-side with .scss.'),
-        make_option(
-            '--engine',
-            dest='engine',
-            default='django',
-            help='Set templating engine used (django, jinja2). Default: django.'),
-    )
 
     def __init__(self):
         self.parser = None
@@ -48,6 +31,26 @@ class Command(BaseCommand):
         self.use_static_root = False
         self.static_root = ''
         super(Command, self).__init__()
+
+    def add_arguments(self, parser):
+        parser.add_argument('--delete-files',
+            action='store_true',
+            dest='delete_files',
+            default=False,
+            help=_("Delete generated `*.css` files instead of creating them.")
+        )
+        parser.add_argument('--use-processor-root',
+            action='store_true',
+            dest='use_processor_root',
+            default=False,
+            help=_("Store resulting .css in settings.SASS_PROCESSOR_ROOT folder. "
+                   "Default: store each css side-by-side with .scss.")
+        )
+        parser.add_argument('--engine',
+            dest='engine',
+            default='django',
+            help=_("Set templating engine used (django, jinja2). Default: django.")
+        )
 
     def handle(self, *args, **options):
         self.verbosity = int(options['verbosity'])
