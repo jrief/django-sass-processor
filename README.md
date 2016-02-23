@@ -206,6 +206,8 @@ from you HTML templates.
 
 ## Changelog
 
+* 0.3.4.dev0
+
 * 0.3.4
  - Fixed: ``get_template_sources()`` in Django-1.9 returns Objects rather than strings.
  - In command, use ``ArgumentParser`` rather than ``OptionParser``.
