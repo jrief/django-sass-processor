@@ -154,21 +154,26 @@ class Command(BaseCommand):
         try:
             template = self.parser.parse(template_name)
         except IOError:  # unreadable file -> ignore
-            self.stdout.write("Unreadable template at: %s\n" % template_name)
+            if self.verbosity > 0:
+                self.stdout.write("Unreadable template at: %s\n" % template_name)
             return
         except TemplateSyntaxError as e:  # broken template -> ignore
-            self.stdout.write("Invalid template %s: %s\n" % (template_name, e))
+            if self.verbosity > 0:
+                self.stdout.write("Invalid template %s: %s\n" % (template_name, e))
             return
         except TemplateDoesNotExist:  # non existent template -> ignore
-            self.stdout.write("Non-existent template at: %s\n" % template_name)
+            if self.verbosity > 0:
+                self.stdout.write("Non-existent template at: %s\n" % template_name)
             return
         except UnicodeDecodeError:
-            self.stdout.write("UnicodeDecodeError while trying to read template %s\n" % template_name)
+            if self.verbosity > 0:
+                self.stdout.write("UnicodeDecodeError while trying to read template %s\n" % template_name)
         try:
             nodes = list(self.walk_nodes(template, original=template))
         except Exception as e:
             # Could be an error in some base template
-            self.stdout.write("Error parsing template %s: %s\n" % (template_name, e))
+            if self.verbosity > 0:
+                self.stdout.write("Error parsing template %s: %s\n" % (template_name, e))
         else:
             for node in nodes:
                 if self.delete_files:
