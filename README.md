@@ -101,6 +101,39 @@ avoid ``compressed`` output style.
 SASS_OUTPUT_STYLE = 'compact'
 ```
 
+### Jinja2 support
+
+`sass_processor.jinja2.ext.SassSrc` is a Jinja2 extension. Add it to your Jinja2 environment to enable the tag `sass_src`, there is no need for a `load` tag. Example of how to add your Jinja2 environment to Django:
+
+In `settings.py`:
+```python
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.jinja2.Jinja2',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'environment': 'yourapp.jinja2.environment'
+        }
+    }
+]
+```
+
+Make sure to still add the default template backend if you're still using Django templates elsewhere. This is covered in the [upgrading to 1.8 documentation](https://docs.djangoproject.com/en/1.9/ref/templates/upgrading/).
+
+In `yourapp/jinja2.py`:
+```python
+from jinja2 import Environment
+
+
+def environment(**kwargs):
+    extensions = [] if 'extensions' not in kwargs else kwargs['extensions']
+    extensions.append('sass_processor.jinja2.ext.SassSrc')
+    kwargs['extensions'] = extensions
+
+    return Environment(**kwargs)
+```
+
 ## Preprocessing SASS
 
 **django-sass-processor** is shipped with a built-in preprocessor to convert ``*.scss`` or
@@ -159,7 +192,7 @@ on how to set up ``COMPRESS_JINJA2_GET_ENVIRONMENT`` to configure jinja2 engine 
 ### Alternative templates
 
 By default, **django-sass-processor** will locate SASS/SCSS files from .html templates,
-but you can extend or override this behavior. Just use the following syntax in ``settings.py``: 
+but you can extend or override this behavior. Just use the following syntax in ``settings.py``:
 
 ```
 SASS_TEMPLATE_EXTS = ['.html','.jade']
@@ -233,14 +266,14 @@ from you HTML templates.
  - Forcing compiled unicode to bytes, since 'Font Awesome' uses Unicode Private Use Area (PUA)
    and hence implicit conversion on ``fh.write()`` failed.
 
-* 0.2.3 
+* 0.2.3
  - Allow for setting template extensions and output style.
  - Force Django to calculate template_source_loaders from TEMPLATE_LOADERS settings, by asking to find a dummy template.
 
-* 0.2.0 
+* 0.2.0
  - Removed dependency to **django-sekizai** and **django-classy-tags**. It now can operate in
    stand-alone mode. Therefore the project has been renamed to **django-sass-processor**.
 
-* 0.1.0 
+* 0.1.0
  - Initial revision named **django-sekizai-processors**, based on a preprocessor for the Sekizai
    template tags ``{% addtoblock %}``.

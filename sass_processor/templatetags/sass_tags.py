@@ -1,25 +1,28 @@
 # -*- coding: utf-8 -*-
-import os
 import json
+import os
+
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from django.core.files.base import ContentFile
+from django.template import Context, Library
+from django.template.base import Node, TemplateSyntaxError
+from django.utils.encoding import force_bytes, iri_to_uri
+from django.utils.six.moves.urllib.parse import urljoin
+from sass_processor.utils import get_setting
+
+from ..storage import SassFileStorage, find_file
+
 try:
     import sass
 except ImportError:
     sass = None
-from django.conf import settings
-from django.core.files.base import ContentFile
-from django.core.exceptions import ImproperlyConfigured
-from django.template import Library, Context
-from django.template.base import Node, TemplateSyntaxError
-from django.utils.encoding import iri_to_uri, force_bytes
-from django.utils.six.moves.urllib.parse import urljoin
-from sass_processor.utils import get_setting
-from ..storage import SassFileStorage, find_file
 
 register = Library()
 
 
 class SassSrcNode(Node):
-    def __init__(self, path):
+    def __init__(self, path, source_file=None):
         self.storage = SassFileStorage()
         self.include_paths = list(getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', []))
         self.prefix = iri_to_uri(getattr(settings, 'STATIC_URL', ''))
@@ -31,6 +34,7 @@ class SassSrcNode(Node):
             'nested' if settings.DEBUG else 'compressed')
         self._sass_exts = ('.scss', '.sass')
         self._path = path
+        self._source_file = source_file
 
     @classmethod
     def handle_token(cls, parser, token):
@@ -39,6 +43,13 @@ class SassSrcNode(Node):
             raise TemplateSyntaxError("'{0}' takes a URL to a CSS file as its only argument".format(*bits))
         path = parser.compile_filter(bits[1])
         return cls(path)
+
+    @property
+    def source_file(self):
+        if self._source_file is not None:
+            return self._source_file
+        else:
+            return self.source[0].name
 
     @property
     def path(self):
@@ -65,18 +76,24 @@ class SassSrcNode(Node):
                 return False
         return True
 
-    def render(self, context):
-        path = self._path.resolve(context)
+    def render(self, context, path=None):
+        if path is None:
+            path = self._path.resolve(context)
         basename, ext = os.path.splitext(path)
         filename = find_file(path)
         if filename is None:
-            msg = "Unable to locate file {0} while rendering template {1}".format(path, self.source[0].name)
-            raise TemplateSyntaxError(msg)
+            raise TemplateSyntaxError(
+                'Unable to locate file {path} while rendering template {template}'.format(
+                    path=path,
+                    template=self.source_file
+                )
+            )
         if ext not in self._sass_exts:
             # return the given path, since it ends neither in `.scss` nor in `.sass`
             return urljoin(self.prefix, path)
 
-        # compare timestamp of sourcemap file with all its dependencies, and check if we must recompile
+        # compare timestamp of sourcemap file with all its dependencies
+        # and check if we must recompile
         css_filename = basename + '.css'
         url = urljoin(self.prefix, css_filename)
         if not getattr(settings, 'SASS_PROCESSOR_ENABLED', settings.DEBUG):
