@@ -239,7 +239,7 @@ from you HTML templates.
 
 ## Changelog
 
-* 0.3.4.dev0
+* 0.3.5
  - Added Jinja2 support, see [Jinja2 support](#jinja2-support).
 
 * 0.3.4
