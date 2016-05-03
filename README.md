@@ -240,6 +240,7 @@ from you HTML templates.
 ## Changelog
 
 * 0.3.4.dev0
+ - Added Jinja2 support, see [Jinja2 support](#jinja2-support).
 
 * 0.3.4
  - Fixed: ``get_template_sources()`` in Django-1.9 returns Objects rather than strings.
