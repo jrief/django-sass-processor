@@ -6,6 +6,7 @@ import json
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
+from django.template import Context
 from django.utils.encoding import force_bytes, iri_to_uri
 from django.utils.six.moves.urllib.parse import urljoin
 from sass_processor.utils import get_setting
@@ -42,8 +43,7 @@ class SassProcessor(object):
             # return the given path, since it ends neither in `.scss` nor in `.sass`
             return urljoin(self.prefix, path)
 
-        # compare timestamp of sourcemap file with all its dependencies
-        # and check if we must recompile
+        # compare timestamp of sourcemap file with all its dependencies, and check if we must recompile
         css_filename = basename + '.css'
         url = urljoin(self.prefix, css_filename)
         if not getattr(settings, 'SASS_PROCESSOR_ENABLED', settings.DEBUG):
@@ -83,11 +83,13 @@ class SassProcessor(object):
         self.storage.save(sourcemap_filename, ContentFile(sourcemap))
         return url
 
-    def resolve_path(self, context):
+    def resolve_path(self, context=None):
+        if context is None:
+            context = Context()
         return self._path.resolve(context)
 
     def is_sass(self):
-        _, ext = os.path.splitext(self.path)
+        _, ext = os.path.splitext(self.resolve_path())
         return ext in self._sass_exts
 
     def is_latest(self, sourcemap_filename):
