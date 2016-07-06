@@ -20,4 +20,6 @@ Release logic:
 13. git push
 """
 
-__version__ = '0.3.5'
+__version__ = '0.3.6'
+
+from .processor import SassProcessor
