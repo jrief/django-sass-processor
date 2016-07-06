@@ -1,7 +1,7 @@
 from jinja2 import lexer, nodes
 from jinja2.ext import Extension
 
-from ..templatetags.sass_tags import SassSrcNode
+from ..processor import SassProcessor
 
 
 class SassSrc(Extension):
@@ -28,5 +28,5 @@ class SassSrc(Extension):
         )
 
     def _sass_src_support(self, path, source_file):
-        node = SassSrcNode(path, source_file)
-        return node.render(None, path)
+        processor = SassProcessor(source_file)
+        return processor.get_css_url(path)
