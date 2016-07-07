@@ -31,7 +31,7 @@ class SassSrcNode(Node):
     def render(self, context):
         try:
             path = self.sass_processor.resolve_path(context)
-            url = self.sass_processor.get_css_url(path)
+            url = self.sass_processor(path)
         except AttributeError:
             msg = "No sass/scss file specified while rendering tag 'sass_src' in template {}"
             raise TemplateSyntaxError(msg.format(self.source[0].name))

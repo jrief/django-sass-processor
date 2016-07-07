@@ -33,7 +33,7 @@ class SassProcessor(object):
         self._sass_exts = ('.scss', '.sass')
         self._path = path
 
-    def get_css_url(self, path):
+    def __call__(self, path):
         basename, ext = os.path.splitext(path)
         filename = find_file(path)
         if filename is None:

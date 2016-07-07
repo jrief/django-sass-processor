@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from jinja2 import lexer, nodes
 from jinja2.ext import Extension
-
-from ..processor import SassProcessor
+from sass_processor.processor import SassProcessor
 
 
 class SassSrc(Extension):
@@ -16,8 +18,7 @@ class SassSrc(Extension):
         path = nodes.Const(token.value)
 
         call = self.call_method(
-            '_sass_src_support',
-            [
+            '_sass_src_support', [
                 path,
                 nodes.Const(parser.filename)
             ]
@@ -28,5 +29,5 @@ class SassSrc(Extension):
         )
 
     def _sass_src_support(self, path, source_file):
-        processor = SassProcessor(source_file)
-        return processor.get_css_url(path)
+        sass_processor = SassProcessor(source_file)
+        return sass_processor(path)
