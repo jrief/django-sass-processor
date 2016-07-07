@@ -1,8 +1,21 @@
 # django-sass-processor
 
-Processor to compile files from markup languages such as SASS/SCSS, if referenced using the
-templatetag ``{% sass_src 'path/to/file.scss' %}``. This special templatetag can be used instead of
-the built-in tag ``static``.
+Processor to compile files from markup languages such as SASS/SCSS.
+
+**django-sass-processor** converts ``*.scss`` or ``*.sass`` files into ``*.css`` while rendering
+templates. For performance reasons this is done only once, since the preprocessor keeps track on
+the timestamps and only recompiles, if any of the imported SASS/SCSS files is younger than the
+corresponding generated CSS file.
+
+
+## Introduction
+
+This Django app provides a templatetag ``{% sass_src 'path/to/file.scss' %}``, which can be used
+instead of the built-in templatetag ``static``. Since version 0.3.4 this also works for Jinja2
+templates.
+
+If SASS/SCSS files shall be referenced through the ``Media`` class, or ``media`` property, the SASS
+processor can be used directly.
 
 Additionally, **django-sass-processor** is shipped with a management command, which can convert
 the content of all occurrences inside the templatetag ``sass_src`` as an offline operation. Hence
@@ -12,8 +25,8 @@ During development, a [sourcemap](https://developer.chrome.com/devtools/docs/css
 generated along side with the compiled ``*.css`` file. This allows to debug style sheet errors much
 easier.
 
-With this tool, you can safely remove your Ruby installations “Compass” and “SASS” from your Django
-projects.
+With this tool, you can safely remove your Ruby installations "Compass" and "SASS" from your Django
+projects. You neither need any directory "watching" daemons based on node.js.
 
 
 ## Project's Home
@@ -23,6 +36,7 @@ On GitHub:
 https://github.com/jrief/django-sass-processor
 
 Please use the issue tracker to report bugs or propose new features.
+
 
 ## Installation
 
@@ -35,6 +49,7 @@ pip install libsass django-compressor django-sass-processor
 
 ``libsass`` is not required on the production environment, if SASS/SCSS files have been precompiled
 and deployed using offline compilation.
+
 
 ## Configuration
 
@@ -119,7 +134,8 @@ TEMPLATES = [
 ]
 ```
 
-Make sure to still add the default template backend if you're still using Django templates elsewhere. This is covered in the [upgrading to 1.8 documentation](https://docs.djangoproject.com/en/1.9/ref/templates/upgrading/).
+Make sure to still add the default template backend if you're still using Django templates elsewhere.
+This is covered in the [upgrading to 1.8 documentation](https://docs.djangoproject.com/en/1.9/ref/templates/upgrading/).
 
 In `yourapp/jinja2.py`:
 ```python
@@ -134,13 +150,7 @@ def environment(**kwargs):
     return Environment(**kwargs)
 ```
 
-## Preprocessing SASS
-
-**django-sass-processor** is shipped with a built-in preprocessor to convert ``*.scss`` or
-``*.sass`` files into ``*.css`` while rendering the template. For performance reasons
-this is done only once, but the preprocessor keeps track on the timestamps and recompiles, if
-any of the imported SASS/SCSS files is younger than the corresponding generated CSS file.
-
+## Usage
 
 ### In your Django templates
 
@@ -150,7 +160,31 @@ any of the imported SASS/SCSS files is younger than the corresponding generated 
 <link href="{% sass_src 'myapp/css/mystyle.scss' %}" rel="stylesheet" type="text/css" />
 ```
 
+The above template code will be render as HTML such as
+``<link href="/static/myapp/css/mystyle.css" rel="stylesheet" type="text/css" />``
+
 You can safely use this templatetag inside a Sekizai's ``{% addtoblock "css" %}`` statement.
+
+
+### In Media classes or properties
+
+In Python code, you can access the API of the SASS processor directly. This for instance is useful
+in Django's admin or form framework.
+
+```python
+from sass_processor import SassProcessor
+
+sass_processor = SassProcessor()
+
+class SomeAdminOrFormClass(...):
+    ...
+    class Media:
+         css = {
+            'all': (sass_processor('myapp/css/mystyle.scss'),)
+        }
+```
+
+This feature is available since version 0.4.0.
 
 
 ## Offline compilation
@@ -176,8 +210,8 @@ reverse the above command:
 ```
 This will remove all occurrences of previously generated ``*.css`` files.
 
-Or you may direct compilation results to ``SASS_PROCESSOR_ROOT`` directory
-(if not specified - to ``STATIC_ROOT``):
+Or you may direct compile results to the ``SASS_PROCESSOR_ROOT`` directory (if not specified - to
+``STATIC_ROOT``):
 
 ```
 ./manage.py compilescss --use-processor-root
@@ -185,8 +219,9 @@ Or you may direct compilation results to ``SASS_PROCESSOR_ROOT`` directory
 Combine with ``--delete-files`` switch to purge results from there.
 
 If you use an alternative templating engine (django 1.8+) set its name in ``--engine`` argument.
-``django`` and ``jinja2`` is supported, see [django-compressor documentation](http://django-compressor.readthedocs.org/en/latest/)
-on how to set up ``COMPRESS_JINJA2_GET_ENVIRONMENT`` to configure jinja2 engine support.
+``django`` and ``jinja2`` is supported, see
+[django-compressor documentation](http://django-compressor.readthedocs.org/en/latest/) on how to
+set up ``COMPRESS_JINJA2_GET_ENVIRONMENT`` to configure jinja2 engine support.
 
 
 ### Alternative templates
@@ -205,9 +240,10 @@ In SASS, a nasty problem is to set the correct include paths for icons and fonts
 done through a ``_variables.scss`` file, but this inhibits a configuration through your projects
 ``settings.py``.
 
-Starting with version 0.2.5 **django-sass-processor** offers a SASS function to fetch any arbitrary
-configuration from ``settings.py``. This is specially handy for setting the include path of your
-Glyphicons font directory. Assume you installed Bootstrap SASS files using
+To avoid the need for duplicate configuration settings, **django-sass-processor** offers a SASS
+function to fetch any arbitrary configuration from the project's ``settings.py``. This is specially
+handy for setting the include path of your Glyphicons font directory. Assume you installed Bootstrap
+SASS files using
 
 ```npm install bootstrap-sass```
 
@@ -238,6 +274,10 @@ from you HTML templates.
 
 
 ## Changelog
+
+* 0.4.0
+- Refactored the sass processor into a self-contained class ``SassProcessor``, which can be accessed
+  through an API, the Jinja2 template engine and the existing templatetag.
 
 * 0.3.5
  - Added Jinja2 support, see [Jinja2 support](#jinja2-support).
