@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 from setuptools import setup, find_packages
-from sass_processor import __version__
+from sass_processor.version import __version__
 try:
     from pypandoc import convert
 except ImportError:
