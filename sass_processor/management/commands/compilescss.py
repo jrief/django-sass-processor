@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 import os
 import django
 import sass
-from optparse import make_option
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template.loader import get_template  # noqa Leave this in to preload template locations
@@ -191,7 +190,7 @@ class Command(BaseCommand):
 
         compile_kwargs = {
             'filename': sass_filename,
-            'include_paths': node.include_paths,
+            'include_paths': node.sass_processor.include_paths,
             'custom_functions': custom_functions,
         }
         if self.sass_precision:
