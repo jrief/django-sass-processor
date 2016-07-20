@@ -20,4 +20,4 @@ Release logic:
 13. git push
 """
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
