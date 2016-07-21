@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import os
 import json
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
 from django.template import Context
@@ -20,8 +21,6 @@ except ImportError:
 
 class SassProcessor(object):
     def __init__(self, path=None):
-        from django.conf import settings
-
         self.storage = SassFileStorage()
         self.include_paths = list(getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', []))
         self.prefix = iri_to_uri(getattr(settings, 'STATIC_URL', ''))

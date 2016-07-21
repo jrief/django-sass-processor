@@ -172,7 +172,7 @@ In Python code, you can access the API of the SASS processor directly. This for 
 in Django's admin or form framework.
 
 ```python
-from sass_processor import SassProcessor
+from sass_processor.processor import SassProcessor
 
 sass_processor = SassProcessor()
 
@@ -275,7 +275,7 @@ from you HTML templates.
 
 ## Changelog
 
-* 0.4.0
+* 0.4.0 - 0.4.4
 - Refactored the sass processor into a self-contained class ``SassProcessor``, which can be accessed
   through an API, the Jinja2 template engine and the existing templatetag.
 

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from .processor import SassProcessor
 """
 See PEP 386 (https://www.python.org/dev/peps/pep-0386/)
 
@@ -22,4 +21,4 @@ Release logic:
 13. git push
 """
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'
