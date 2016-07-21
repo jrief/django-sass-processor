@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import os
 import json
-from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
 from django.template import Context
@@ -21,6 +20,8 @@ except ImportError:
 
 class SassProcessor(object):
     def __init__(self, path=None):
+        from django.conf import settings
+
         self.storage = SassFileStorage()
         self.include_paths = list(getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', []))
         self.prefix = iri_to_uri(getattr(settings, 'STATIC_URL', ''))
@@ -30,6 +31,7 @@ class SassProcessor(object):
             settings,
             'SASS_OUTPUT_STYLE',
             'nested' if settings.DEBUG else 'compressed')
+        self.processor_enabled = getattr(settings, 'SASS_PROCESSOR_ENABLED', settings.DEBUG)
         self._sass_exts = ('.scss', '.sass')
         self._path = path
 
@@ -46,7 +48,7 @@ class SassProcessor(object):
         # compare timestamp of sourcemap file with all its dependencies, and check if we must recompile
         css_filename = basename + '.css'
         url = urljoin(self.prefix, css_filename)
-        if not getattr(settings, 'SASS_PROCESSOR_ENABLED', settings.DEBUG):
+        if not self.processor_enabled:
             return url
         sourcemap_filename = css_filename + '.map'
         if self.is_latest(sourcemap_filename):
