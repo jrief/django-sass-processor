@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.template import Library
 from django.template.base import Node, TemplateSyntaxError
-from sass_processor.processor import SassProcessor
+from sass_processor.processor import SassProcessor, FileNotFoundError
 
 register = Library()
 
