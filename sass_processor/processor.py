@@ -18,6 +18,11 @@ try:
 except ImportError:
     sass = None
 
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
 
 class SassProcessor(object):
     def __init__(self, path=None):
