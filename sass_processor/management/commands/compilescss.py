@@ -233,7 +233,12 @@ class Command(BaseCommand):
         """
         Iterate over the nodes recursively yielding the templatetag 'sass_src'
         """
-        for node in self.parser.get_nodelist(node, original=original):
+        try:
+            # try with django-compressor<2.1
+            nodelist = self.parser.get_nodelist(node, original=original)
+        except TypeError:
+            nodelist = self.parser.get_nodelist(node, original=original, context=None)
+        for node in nodelist:
             if isinstance(node, SassSrcNode):
                 if node.is_sass:
                     yield node
