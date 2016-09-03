@@ -64,9 +64,11 @@ class Command(BaseCommand):
             self.parse_template(template_name)
         if self.verbosity > 0:
             if self.delete_files:
-                self.stdout.write('Successfully deleted {0} previously generated `*.css` files.'.format(len(self.compiled_files)))
+                msg = "Successfully deleted {0} previously generated `*.css` files."
+                self.stdout.write(msg.format(len(self.compiled_files)))
             else:
-                self.stdout.write('Successfully compiled {0} referred SASS/SCSS files.'.format(len(self.compiled_files)))
+                msg = "Successfully compiled {0} referred SASS/SCSS files."
+                self.stdout.write(msg.format(len(self.compiled_files)))
 
     def get_parser(self, engine):
         if engine == "jinja2":

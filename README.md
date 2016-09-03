@@ -70,10 +70,14 @@ Optionally, add a list of additional search paths, the SASS compiler may examine
 import os
 
 SASS_PROCESSOR_INCLUDE_DIRS = (
-    os.path.join(PROJECT_PATH, 'mystyles/scss'),
+    os.path.join(PROJECT_PATH, 'extra-styles/scss'),
     os.path.join(PROJECT_PATH, 'node_modules'),
 )
 ```
+
+Additionally, **django-sass-processor** will traverse all installed Django apps and look into their
+static folders. If any of them contain a file starting with a ``_`` (underscore) and ending in
+``.scss`` or ``.sass``, then that app specific static folder is added to the include paths.
 
 During development, or when ``SASS_PROCESSOR_ENABLED`` is set to ``True``, the compiled file is
 placed into the folder referenced by ``SASS_PROCESSOR_ROOT`` (if unset, this setting defaults to

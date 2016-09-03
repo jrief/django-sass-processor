@@ -12,6 +12,7 @@ from django.utils.six.moves.urllib.parse import urljoin
 from sass_processor.utils import get_setting
 
 from .storage import SassFileStorage, find_file
+from .apps import APPS_INCLUDE_DIRS
 
 try:
     import sass
@@ -28,6 +29,7 @@ class SassProcessor(object):
     def __init__(self, path=None):
         self.storage = SassFileStorage()
         self.include_paths = list(getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', []))
+        self.include_paths.extend(APPS_INCLUDE_DIRS)
         self.prefix = iri_to_uri(getattr(settings, 'STATIC_URL', ''))
         precision = getattr(settings, 'SASS_PRECISION', None)
         self.sass_precision = int(precision) if precision else None

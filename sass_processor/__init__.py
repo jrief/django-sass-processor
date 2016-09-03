@@ -22,3 +22,5 @@ Release logic:
 """
 
 __version__ = '0.4.6'
+
+default_app_config = 'sass_processor.apps.SassProcessorConfig'
