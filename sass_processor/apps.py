@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 import os
 from django.apps import apps, AppConfig
+from django.conf import settings
+from django.core.files.storage import get_storage_class
 
 
 APPS_INCLUDE_DIRS = []
@@ -10,17 +12,15 @@ APPS_INCLUDE_DIRS = []
 class SassProcessorConfig(AppConfig):
     name = 'sass_processor'
     verbose_name = "Sass Processor"
-    _static_dir = 'static'
     _sass_exts = ('.scss', '.sass')
+    _storage = get_storage_class(import_path=settings.STATICFILES_STORAGE)()
 
     def ready(self):
         app_configs = apps.get_app_configs()
         for app_config in app_configs:
-            static_dir = os.path.join(app_config.path, self._static_dir)
+            static_dir = os.path.join(app_config.path, self._storage.base_url.strip(os.path.sep))
             if os.path.isdir(static_dir):
                 self.traverse_tree(static_dir)
-
-        print(APPS_INCLUDE_DIRS)
 
     @classmethod
     def traverse_tree(cls, static_dir):
