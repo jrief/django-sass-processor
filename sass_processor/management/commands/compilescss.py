@@ -87,7 +87,7 @@ class Command(BaseCommand):
         except (AttributeError, TypeError, ValueError):
             self.sass_precision = None
 
-        self.compiled_files = []
+        self.processed_files = []
 
         # find all Python files making up this project; They might invoke `sass_processor`
         for py_source in self.find_sources():
@@ -107,10 +107,10 @@ class Command(BaseCommand):
             self.stdout.write("")
             if self.delete_files:
                 msg = "Successfully deleted {0} previously generated `*.css` files."
-                self.stdout.write(msg.format(len(self.compiled_files)))
+                self.stdout.write(msg.format(len(self.processed_files)))
             else:
                 msg = "Successfully compiled {0} referred SASS/SCSS files."
-                self.stdout.write(msg.format(len(self.compiled_files)))
+                self.stdout.write(msg.format(len(self.processed_files)))
 
     def get_parser(self, engine):
         if engine == "jinja2":
@@ -255,11 +255,11 @@ class Command(BaseCommand):
         else:
             for node in nodes:
                 sass_filename = find_file(node.path)
-                if not sass_filename:
+                if not sass_filename or sass_filename in self.processed_files:
                     continue
                 if self.delete_files:
                     self.delete_file(sass_filename)
-                elif sass_filename not in self.compiled_files:
+                else:
                     self.compile_sass(sass_filename)
 
     def compile_sass(self, sass_filename):
@@ -282,7 +282,7 @@ class Command(BaseCommand):
         destpath = self.get_destination(sass_filename)
         with open(destpath, 'wb') as fh:
             fh.write(force_bytes(content))
-        self.compiled_files.append(sass_filename)
+        self.processed_files.append(sass_filename)
         if self.verbosity > 1:
             self.stdout.write("Compiled SASS/SCSS file: '{0}'\n".format(sass_filename))
 
@@ -293,7 +293,7 @@ class Command(BaseCommand):
         destpath = self.get_destination(sass_filename)
         if os.path.isfile(destpath):
             os.remove(destpath)
-            self.compiled_files.append(sass_filename)
+            self.processed_files.append(sass_filename)
             if self.verbosity > 1:
                 self.stdout.write("Deleted '{0}'\n".format(destpath))
 
