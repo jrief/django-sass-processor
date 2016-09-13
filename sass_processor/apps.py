@@ -16,11 +16,12 @@ class SassProcessorConfig(AppConfig):
     _storage = get_storage_class(import_path=settings.STATICFILES_STORAGE)()
 
     def ready(self):
-        app_configs = apps.get_app_configs()
-        for app_config in app_configs:
-            static_dir = os.path.join(app_config.path, self._storage.base_url.strip(os.path.sep))
-            if os.path.isdir(static_dir):
-                self.traverse_tree(static_dir)
+        if getattr(settings, 'SASS_PROCESSOR_AUTO_INCLUDE', True):
+            app_configs = apps.get_app_configs()
+            for app_config in app_configs:
+                static_dir = os.path.join(app_config.path, self._storage.base_url.strip(os.path.sep))
+                if os.path.isdir(static_dir):
+                    self.traverse_tree(static_dir)
 
     @classmethod
     def traverse_tree(cls, static_dir):

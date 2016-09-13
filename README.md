@@ -77,20 +77,21 @@ SASS_PROCESSOR_INCLUDE_DIRS = (
 
 Additionally, **django-sass-processor** will traverse all installed Django apps and look into their
 static folders. If any of them contain a file starting with a ``_`` (underscore) and ending in
-``.scss`` or ``.sass``, then that app specific static folder is added to the include paths.
+``.scss`` or ``.sass``, then that app specific static folder is added to the **libsass** include
+dirs. This feature can be disabled by setting ``SASS_PROCESSOR_AUTO_INCLUDE = False``.
 
-During development, or when ``SASS_PROCESSOR_ENABLED`` is set to ``True``, the compiled file is
-placed into the folder referenced by ``SASS_PROCESSOR_ROOT`` (if unset, this setting defaults to
-``STATIC_ROOT``). Having a location outside of the working directory prevents to pollute your local
-``static/css/...`` folders with auto-generated files. Therefore assure, that this directory is
-writable by the Django runserver.
+During development, or when ``SASS_PROCESSOR_ENABLED == True``, the compiled file is placed into the
+folder referenced by ``SASS_PROCESSOR_ROOT`` (if unset, this setting defaults to ``STATIC_ROOT``).
+Having a location outside of the working directory prevents to pollute your local ``static/css/...``
+folders with auto-generated files. Therefore assure, that this directory is writable by the Django
+runserver.
 
 **django-sass-processor** is shipped with a special finder, to locate the generated ``*.css`` files
 in the folder referred by ``SASS_PROCESSOR_ROOT`` (or, if unset ``STATIC_ROOT``). Just add it to
-your ``settings.py``. If there is no ``STATICFILES_FINDERS`` setting in your ``settings.py`` don't
-forget to include **django** [default finders](https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-STATICFILES_FINDERS).
+your ``settings.py``. If there is no ``STATICFILES_FINDERS`` in your ``settings.py`` don't forget
+to include the **Django** [default finders](https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-STATICFILES_FINDERS).
 
-```
+```python
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
@@ -99,7 +100,7 @@ STATICFILES_FINDERS = (
 )
 ```
 
-You may fine tune sass compiler parameters in your `settings.py`.
+#### Fine tune SASS compiler parameters in ``settings.py``.
 
 Integer `SASS_PRECISION` sets floating point precision for output css. libsass'
 default is ``5``. Note: **bootstrap-sass** requires ``8``, otherwise various
@@ -188,7 +189,7 @@ class SomeAdminOrFormClass(...):
         }
 ```
 
-This feature is available since version 0.4.0.
+Please note that ``*.scss``/``.sass`` files using this function can not be compiled offline.
 
 
 ## Offline compilation
@@ -226,6 +227,9 @@ If you use an alternative templating engine (django 1.8+) set its name in ``--en
 ``django`` and ``jinja2`` is supported, see
 [django-compressor documentation](http://django-compressor.readthedocs.org/en/latest/) on how to
 set up ``COMPRESS_JINJA2_GET_ENVIRONMENT`` to configure jinja2 engine support.
+
+Please note that offline compilation only applies to ``*.scss``/``.sass`` files referenced in
+templates, but not in Python modules using ``sass_processor``.
 
 
 ### Alternative templates
@@ -272,8 +276,8 @@ value. For the Glyphicons font search path, add this to your ``_variables.scss``
 $icon-font-path: unquote(get-setting(NODE_MODULES_URL) + "bootstrap-sass/assets/fonts/bootstrap/");
 ```
 
-and ``@import "variables";`` whenever you need Glyphicons. You then can safely remove any
-font references, such as ``<link href="/path/to/your/fonts/bootstrap/glyphicons-whatever.ttf" ...>``
+and ``@import "variables";`` whenever you need Glyphicons. You then can safely remove any font
+references, such as ``<link href="/path/to/your/fonts/bootstrap/glyphicons-whatever.ttf" ...>``
 from you HTML templates.
 
 
