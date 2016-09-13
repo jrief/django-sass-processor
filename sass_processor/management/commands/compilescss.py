@@ -154,7 +154,11 @@ class Command(BaseCommand):
         callvisitor.visit(tree)
         for sass_file in callvisitor.sass_files:
             sass_filename = find_file(sass_file)
-            if sass_filename:
+            if not sass_filename or sass_filename in self.processed_files:
+                continue
+            if self.delete_files:
+                self.delete_file(sass_filename)
+            else:
                 self.compile_sass(sass_filename)
 
     def find_templates(self):
