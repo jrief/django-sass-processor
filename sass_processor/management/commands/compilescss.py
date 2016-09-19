@@ -233,7 +233,7 @@ class Command(BaseCommand):
         """
         Iterate over the nodes recursively yielding the templatetag 'sass_src'
         """
-        for node in self.parser.get_nodelist(node, original=original):
+        for node in self.parser.get_nodelist(node, original=original, context=None):
             if isinstance(node, SassSrcNode):
                 if node.is_sass:
                     yield node
