@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import re
 import os
 from django.apps import apps, AppConfig
 from django.conf import settings
@@ -12,11 +13,12 @@ APPS_INCLUDE_DIRS = []
 class SassProcessorConfig(AppConfig):
     name = 'sass_processor'
     verbose_name = "Sass Processor"
-    _sass_exts = ('.scss', '.sass')
     _storage = get_storage_class(import_path=settings.STATICFILES_STORAGE)()
+    _auto_include = getattr(settings, 'SASS_PROCESSOR_AUTO_INCLUDE', True)
+    _pattern = re.compile(getattr(settings, 'SASS_PROCESSOR_INCLUDE_FILE_PATTERN', r'^_.+\.(scss|sass)$'))
 
     def ready(self):
-        if getattr(settings, 'SASS_PROCESSOR_AUTO_INCLUDE', True):
+        if self._auto_include:
             app_configs = apps.get_app_configs()
             for app_config in app_configs:
                 static_dir = os.path.join(app_config.path, self._storage.base_url.strip(os.path.sep))
@@ -28,7 +30,6 @@ class SassProcessorConfig(AppConfig):
         """traverse the static folders an look for at least one file ending in .scss/.sass"""
         for root, dirs, files in os.walk(static_dir):
             for filename in files:
-                basename, ext = os.path.splitext(filename)
-                if basename.startswith('_') and ext in cls._sass_exts:
+                if cls._pattern.match(filename):
                     APPS_INCLUDE_DIRS.append(static_dir)
                     return
