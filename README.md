@@ -75,10 +75,27 @@ SASS_PROCESSOR_INCLUDE_DIRS = [
 ]
 ```
 
-Additionally, **django-sass-processor** will traverse all installed Django apps and look into their
-static folders. If any of them contain a file starting with a ``_`` (underscore) and ending in
-``.scss`` or ``.sass``, then that app specific static folder is added to the **libsass** include
-dirs. This feature can be disabled by setting ``SASS_PROCESSOR_AUTO_INCLUDE = False``.
+Additionally, **django-sass-processor** will traverse all installed Django apps (``INSTALLED_APPS``)
+and look into their static folders. If any of them contain a file matching the regular expression
+pattern ``^_.+\.(scss|sass)$`` (read: filename starts with an underscore and is of type ``scss`` or
+``sass``), then that app specific static folder is added to the **libsass** include dirs. This
+feature can be disabled in your settings with
+
+```python
+SASS_PROCESSOR_AUTO_INCLUDE = False
+```
+
+If inside of your SASS/SCSS files you also want to import (using ``@import "path/to/scssfile";``)
+files which do not start with an underscore, then you can configure another pattern in your
+settings, for instance
+
+```python
+SASS_PROCESSOR_INCLUDE_FILE_PATTERN = r'^.+\.scss$'
+```
+
+will look for all files of type ``scss``. Remember that SASS/SCSS files which start with an
+underscore are intended to be imported by other SASS/SCSS files, while files starting with a letter
+are intended to be included by the HTML tag ``<link href="{% sass_src 'path/to/file' %}" ...>``.
 
 During development, or when ``SASS_PROCESSOR_ENABLED = True``, the compiled file is placed into the
 folder referenced by ``SASS_PROCESSOR_ROOT`` (if unset, this setting defaults to ``STATIC_ROOT``).
@@ -127,25 +144,23 @@ SASS_OUTPUT_STYLE = 'compact'
 
 In `settings.py`:
 ```python
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.jinja2.Jinja2',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'environment': 'yourapp.jinja2.environment'
-        }
-    }
-]
+TEMPLATES = [{
+    'BACKEND': 'django.template.backends.jinja2.Jinja2',
+    'DIRS': [],
+    'APP_DIRS': True,
+    'OPTIONS': {
+        'environment': 'yourapp.jinja2.environment'
+    },
+    ...
+}]
 ```
 
-Make sure to still add the default template backend if you're still using Django templates elsewhere.
-This is covered in the [upgrading to 1.8 documentation](https://docs.djangoproject.com/en/1.9/ref/templates/upgrading/).
+Make sure to add the default template backend, if you're still using Django templates elsewhere.
+This is covered in the [Upgrading templates documentation](https://docs.djangoproject.com/en/stable/ref/templates/upgrading/).
 
 In `yourapp/jinja2.py`:
 ```python
 from jinja2 import Environment
-
 
 def environment(**kwargs):
     extensions = [] if 'extensions' not in kwargs else kwargs['extensions']
@@ -159,14 +174,17 @@ def environment(**kwargs):
 
 ### In your Django templates
 
-```html
+```django
 {% load sass_tags %}
 
 <link href="{% sass_src 'myapp/css/mystyle.scss' %}" rel="stylesheet" type="text/css" />
 ```
 
-The above template code will be render as HTML such as
-``<link href="/static/myapp/css/mystyle.css" rel="stylesheet" type="text/css" />``
+The above template code will be rendered as HTML
+
+```html
+<link href="/static/myapp/css/mystyle.css" rel="stylesheet" type="text/css" />
+```
 
 You can safely use this templatetag inside a Sekizai's ``{% addtoblock "css" %}`` statement.
 
@@ -192,20 +210,27 @@ class SomeAdminOrFormClass(...):
 
 If you want to precompile all occurrences of your SASS/SCSS files for the whole project, on the
 command line invoke:
-
 ```
 ./manage.py compilescss
 ```
-
 This is useful for preparing production environments, where SASS/SCSS files can't be compiled on
-the fly. To simplify the deployment, the compiled ``*.css`` files are stored side-by-side with their
-corresponding SASS/SCSS files; just run ``./manage.py collectstatic`` afterwards. In case you
-don't want to expose the SASS/SCSS files in a production environment, deploy with
-``./manage.py collectstatic --ignore=.scss``.
+the fly.
+
+To simplify the deployment, the compiled ``*.css`` files are stored side-by-side with their
+corresponding SASS/SCSS files; just run
+```
+./manage.py collectstatic
+```
+afterwards.
+
+In case you don't want to expose the SASS/SCSS files in a production environment,
+deploy with
+```
+./manage.py collectstatic --ignore=.scss
+```
 
 In case you want to get rid of the compiled ``*.css`` files in your local static directories, simply
 reverse the above command:
-
 ```
 ./manage.py compilescss --delete-files
 ```
@@ -213,14 +238,13 @@ This will remove all occurrences of previously generated ``*.css`` files.
 
 Or you may direct compile results to the ``SASS_PROCESSOR_ROOT`` directory (if not specified - to
 ``STATIC_ROOT``):
-
 ```
 ./manage.py compilescss --use-processor-root
 ```
 Combine with ``--delete-files`` switch to purge results from there.
 
-If you use an alternative templating engine (django 1.8+) set its name in ``--engine`` argument.
-``django`` and ``jinja2`` is supported, see
+If you use an alternative templating engine set its name in ``--engine`` argument. Currently
+``django`` and ``jinja2`` are supported, see
 [django-compressor documentation](http://django-compressor.readthedocs.org/en/latest/) on how to
 set up ``COMPRESS_JINJA2_GET_ENVIRONMENT`` to configure jinja2 engine support.
 
@@ -232,12 +256,10 @@ the filename must be hard coded and shall not be concatenated or being somehow g
 ### Alternative templates
 
 By default, **django-sass-processor** will locate SASS/SCSS files from .html templates,
-but you can extend or override this behavior. Just use the following syntax in ``settings.py``:
-
+but you can extend or override this behavior in your settings with:
 ```python
 SASS_TEMPLATE_EXTS = ['.html','.jade']
 ```
-
 
 ## Configure SASS variables through settings.py
 
@@ -249,10 +271,11 @@ To avoid the need for duplicate configuration settings, **django-sass-processor*
 function to fetch any arbitrary configuration from the project's ``settings.py``. This is specially
 handy for setting the include path of your Glyphicons font directory. Assume, Bootstrap-SASS has
 been installed using:
+```
+npm install bootstrap-sass
+```
 
-```npm install bootstrap-sass```
-
-then locate your ``node_modules`` folder and add it to your ``settings.py``, so that your fonts are
+then locate the directory named ``node_modules`` and add it to your settings, so that your fonts are
 accessible through the Django's ``django.contrib.staticfiles.finders.FileSystemFinder``:
 
 ```python
@@ -263,7 +286,6 @@ STATICFILES_DIRS = [
 ]
 
 NODE_MODULES_URL = STATIC_URL + 'node_modules/'
-
 ```
 
 With the SASS function ``get-setting``, you now can override any SASS variable with a configurable
@@ -283,6 +305,8 @@ from you HTML templates.
 * 0.5.0
 - SASS/SCSS files can also be referenced in pure Python files, for instance in ``Media`` class or
   ``media`` property definitions.
+- The SASS processor will look for potential include directories, so that the ``@import "..."``
+  statement also works for SASS files located in other Django apps.
 
 * 0.4.0 - 0.4.4
 - Refactored the sass processor into a self-contained class ``SassProcessor``, which can be accessed
