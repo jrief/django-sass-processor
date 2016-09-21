@@ -28,7 +28,6 @@ except NameError:
 class SassProcessor(object):
     storage = SassFileStorage()
     include_paths = list(getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', []))
-    include_paths.extend(APPS_INCLUDE_DIRS)
     prefix = iri_to_uri(getattr(settings, 'STATIC_URL', ''))
     try:
         sass_precision = int(settings.SASS_PRECISION)
@@ -76,7 +75,7 @@ class SassProcessor(object):
         compile_kwargs = {
             'filename': filename,
             'source_map_filename': sourcemap_url,
-            'include_paths': self.include_paths,
+            'include_paths': self.include_paths + APPS_INCLUDE_DIRS,
             'custom_functions': custom_functions,
         }
         if self.sass_precision:
