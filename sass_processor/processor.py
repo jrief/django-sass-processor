@@ -12,6 +12,7 @@ from django.utils.six.moves.urllib.parse import urljoin
 from sass_processor.utils import get_setting
 
 from .storage import SassFileStorage, find_file
+from .apps import APPS_INCLUDE_DIRS
 
 try:
     import sass
@@ -25,18 +26,21 @@ except NameError:
 
 
 class SassProcessor(object):
+    storage = SassFileStorage()
+    include_paths = list(getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', []))
+    prefix = iri_to_uri(getattr(settings, 'STATIC_URL', ''))
+    try:
+        sass_precision = int(settings.SASS_PRECISION)
+    except (AttributeError, TypeError, ValueError):
+        sass_precision = None
+    sass_output_style = getattr(
+        settings,
+        'SASS_OUTPUT_STYLE',
+        'nested' if settings.DEBUG else 'compressed')
+    processor_enabled = getattr(settings, 'SASS_PROCESSOR_ENABLED', settings.DEBUG)
+    sass_extensions = ('.scss', '.sass')
+
     def __init__(self, path=None):
-        self.storage = SassFileStorage()
-        self.include_paths = list(getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', []))
-        self.prefix = iri_to_uri(getattr(settings, 'STATIC_URL', ''))
-        precision = getattr(settings, 'SASS_PRECISION', None)
-        self.sass_precision = int(precision) if precision else None
-        self.sass_output_style = getattr(
-            settings,
-            'SASS_OUTPUT_STYLE',
-            'nested' if settings.DEBUG else 'compressed')
-        self.processor_enabled = getattr(settings, 'SASS_PROCESSOR_ENABLED', settings.DEBUG)
-        self._sass_exts = ('.scss', '.sass')
         self._path = path
 
     def __call__(self, path):
@@ -45,7 +49,7 @@ class SassProcessor(object):
         if filename is None:
             raise FileNotFoundError("Unable to locate file {path}".format(path=path))
 
-        if ext not in self._sass_exts:
+        if ext not in self.sass_extensions:
             # return the given path, since it ends neither in `.scss` nor in `.sass`
             return urljoin(self.prefix, path)
 
@@ -71,7 +75,7 @@ class SassProcessor(object):
         compile_kwargs = {
             'filename': filename,
             'source_map_filename': sourcemap_url,
-            'include_paths': self.include_paths,
+            'include_paths': self.include_paths + APPS_INCLUDE_DIRS,
             'custom_functions': custom_functions,
         }
         if self.sass_precision:
@@ -96,7 +100,7 @@ class SassProcessor(object):
 
     def is_sass(self):
         _, ext = os.path.splitext(self.resolve_path())
-        return ext in self._sass_exts
+        return ext in self.sass_extensions
 
     def is_latest(self, sourcemap_filename):
         sourcemap_file = find_file(sourcemap_filename)
@@ -112,3 +116,8 @@ class SassProcessor(object):
                 # at least one of the source is younger that the sourcemap referring it
                 return False
         return True
+
+
+_sass_processor = SassProcessor()
+def sass_processor(filename):
+    return _sass_processor(filename)

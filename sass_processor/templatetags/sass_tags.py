@@ -39,10 +39,10 @@ class SassSrcNode(Node):
             url = self.sass_processor(path)
         except AttributeError:
             msg = "No sass/scss file specified while rendering tag 'sass_src' in template {}"
-            raise TemplateSyntaxError(msg.format(self.source[0].name))
+            raise TemplateSyntaxError(msg.format(context.template_name))
         except FileNotFoundError as e:
             msg = str(e) + " while rendering tag 'sass_src' in template {}"
-            raise TemplateSyntaxError(msg.format(self.source[0].name))
+            raise TemplateSyntaxError(msg.format(context.template_name))
         return url
 
 @register.tag(name='sass_src')
