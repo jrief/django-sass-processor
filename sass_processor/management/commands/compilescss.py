@@ -14,6 +14,7 @@ from django.template.base import Origin
 from django.utils.encoding import force_bytes
 from django.utils.translation import gettext_lazy as _
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
+from sass_processor.apps import APPS_INCLUDE_DIRS
 from sass_processor.templatetags.sass_tags import SassSrcNode
 from sass_processor.processor import SassProcessor
 from sass_processor.storage import find_file
@@ -275,7 +276,7 @@ class Command(BaseCommand):
 
         compile_kwargs = {
             'filename': sass_filename,
-            'include_paths': SassProcessor.include_paths,
+            'include_paths': SassProcessor.include_paths + APPS_INCLUDE_DIRS,
             'custom_functions': custom_functions,
         }
         if self.sass_precision:
