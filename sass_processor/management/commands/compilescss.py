@@ -151,7 +151,7 @@ class Command(BaseCommand):
         `sass_processor(scss_file)` and compile the filename into CSS.
         """
         callvisitor = FuncCallVisitor('sass_processor')
-        tree = ast.parse(open(filename).read())
+        tree = ast.parse(open(filename, 'rb').read())
         callvisitor.visit(tree)
         for sass_file in callvisitor.sass_files:
             sass_filename = find_file(sass_file)
