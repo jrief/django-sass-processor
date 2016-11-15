@@ -302,6 +302,12 @@ from you HTML templates.
 
 ## Changelog
 
+* 0.5.2
+- Fixed Python 3 incompatibility. Open files as binaries, since they may contain unicode characters.
+
+* 0.5.1
+- Add ``APPS_INCLUDE_DIRS`` to the SASS include path.
+
 * 0.5.0
 - SASS/SCSS files can also be referenced in pure Python files, for instance in ``Media`` class or
   ``media`` property definitions.
