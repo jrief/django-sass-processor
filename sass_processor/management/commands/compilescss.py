@@ -33,6 +33,7 @@ class FuncCallVisitor(ast.NodeVisitor):
                 self.sass_files.append(getattr(arg0, arg0._fields[0]))
         except AttributeError:
             pass
+        self.generic_visit(node)
 
 
 class Command(BaseCommand):
