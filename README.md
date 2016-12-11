@@ -302,6 +302,9 @@ from you HTML templates.
 
 ## Changelog
 
+* 0.5.3
+- Fixed compilescss: Did not find calls of sass_processor within a dict, list or tuple
+
 * 0.5.2
 - Fixed Python 3 incompatibility. Open files as binaries, since they may contain unicode characters.
 
