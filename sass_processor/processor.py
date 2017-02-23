@@ -59,7 +59,7 @@ class SassProcessor(object):
         if not self.processor_enabled:
             return url
         sourcemap_filename = css_filename + '.map'
-        if self.is_latest(sourcemap_filename):
+        if find_file(css_filename) and self.is_latest(sourcemap_filename):
             return url
 
         # with offline compilation, raise an error, if css file could not be found.
