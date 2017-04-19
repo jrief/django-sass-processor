@@ -305,7 +305,7 @@ from you HTML templates.
 To run the tests locally, clone the repository, create a new virtualenv,
 activate it and then run these commands:
 
-```
+```shell
 cd django-sass-processor
 pip install tox
 tox
