@@ -3,22 +3,27 @@ from __future__ import unicode_literals
 
 import os
 import ast
-import django
 import sass
+from importlib import import_module
+
 from django.apps import apps
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.template.loader import get_template  # noqa Leave this in to preload template locations
-from importlib import import_module
+from django.core.files.base import ContentFile
+from django.template.loader import get_template  # in order to preload template locations
 from django.template.base import Origin
 from django.utils.encoding import force_bytes
 from django.utils.translation import gettext_lazy as _
+
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
+
 from sass_processor.apps import APPS_INCLUDE_DIRS
 from sass_processor.templatetags.sass_tags import SassSrcNode
 from sass_processor.processor import SassProcessor
-from sass_processor.storage import find_file
+from sass_processor.storage import SassFileStorage, find_file
 from sass_processor.utils import get_setting
+
+__all__ = ['get_template', 'Command']
 
 
 class FuncCallVisitor(ast.NodeVisitor):
@@ -38,6 +43,7 @@ class FuncCallVisitor(ast.NodeVisitor):
 
 class Command(BaseCommand):
     help = "Compile SASS/SCSS into CSS outside of the request/response cycle"
+    storage = SassFileStorage()
 
     def __init__(self):
         self.parser = None
@@ -154,14 +160,14 @@ class Command(BaseCommand):
         callvisitor = FuncCallVisitor('sass_processor')
         tree = ast.parse(open(filename, 'rb').read())
         callvisitor.visit(tree)
-        for sass_file in callvisitor.sass_files:
-            sass_filename = find_file(sass_file)
+        for sass_fileurl in callvisitor.sass_files:
+            sass_filename = find_file(sass_fileurl)
             if not sass_filename or sass_filename in self.processed_files:
                 continue
             if self.delete_files:
-                self.delete_file(sass_filename)
+                self.delete_file(sass_filename, sass_fileurl)
             else:
-                self.compile_sass(sass_filename)
+                self.compile_sass(sass_filename, sass_fileurl)
 
     def find_templates(self):
         """
@@ -244,11 +250,11 @@ class Command(BaseCommand):
                 if not sass_filename or sass_filename in self.processed_files:
                     continue
                 if self.delete_files:
-                    self.delete_file(sass_filename)
+                    self.delete_file(sass_filename, node.path)
                 else:
-                    self.compile_sass(sass_filename)
+                    self.compile_sass(sass_filename, node.path)
 
-    def compile_sass(self, sass_filename):
+    def compile_sass(self, sass_filename, sass_fileurl):
         """
         Compile the given SASS file into CSS
         """
@@ -265,33 +271,35 @@ class Command(BaseCommand):
         if self.sass_output_style:
             compile_kwargs['output_style'] = self.sass_output_style
         content = sass.compile(**compile_kwargs)
-        destpath = self.get_destination(sass_filename)
-        with open(destpath, 'wb') as fh:
-            fh.write(force_bytes(content))
+        self.save_to_destination(content, sass_filename, sass_fileurl)
         self.processed_files.append(sass_filename)
         if self.verbosity > 1:
             self.stdout.write("Compiled SASS/SCSS file: '{0}'\n".format(sass_filename))
 
-    def delete_file(self, sass_filename):
+    def delete_file(self, sass_filename, sass_fileurl):
         """
         Delete a *.css file, but only if it has been generated through a SASS/SCSS file.
         """
-        destpath = self.get_destination(sass_filename)
+        if self.use_static_root:
+            destpath = os.path.join(self.static_root, os.path.splitext(sass_fileurl)[0] + '.css')
+        else:
+            destpath = os.path.splitext(sass_filename)[0] + '.css'
         if os.path.isfile(destpath):
             os.remove(destpath)
             self.processed_files.append(sass_filename)
             if self.verbosity > 1:
                 self.stdout.write("Deleted '{0}'\n".format(destpath))
 
-    def get_destination(self, source):
-        if not self.use_static_root:
-            basename, _ = os.path.splitext(source)
-            destpath = basename + '.css'
-        else:
-            basename, _ = os.path.splitext(os.path.basename(source))
+    def save_to_destination(self, content, sass_filename, sass_fileurl):
+        if self.use_static_root:
+            basename, _ = os.path.splitext(sass_fileurl)
             destpath = os.path.join(self.static_root, basename + '.css')
-
-        return destpath
+            self.storage.save(destpath, ContentFile(content))
+        else:
+            basename, _ = os.path.splitext(sass_filename)
+            destpath = basename + '.css'
+            with open(destpath, 'wb') as fh:
+                fh.write(force_bytes(content))
 
     def walk_nodes(self, node, original):
         """
