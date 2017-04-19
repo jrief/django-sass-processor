@@ -189,31 +189,11 @@ class Command(BaseCommand):
         return templates
 
     def get_loaders(self):
-        if django.VERSION < (1, 8):
-            from django.template.base import TemplateDoesNotExist as DjangoTemplateDoesNotExist
-            from django.template.loader import template_source_loaders
-            if template_source_loaders is None:
-                try:
-                    from django.template.loader import (
-                        find_template as finder_func)
-                except ImportError:
-                    from django.template.loader import (
-                        find_template_source as finder_func)  # noqa
-                try:
-                    # Force django to calculate template_source_loaders from
-                    # TEMPLATE_LOADERS settings, by asking to find a dummy template
-                    source, name = finder_func('test')
-                except DjangoTemplateDoesNotExist:
-                    pass
-                # Reload template_source_loaders now that it has been calculated ;
-                # it should contain the list of valid, instanciated template loaders
-                # to use.
-                from django.template.loader import template_source_loaders
-        else:
-            from django.template import engines
-            template_source_loaders = []
-            for e in engines.all():
-                template_source_loaders.extend(e.engine.get_template_loaders(e.engine.loaders))
+        from django.template import engines
+        template_source_loaders = []
+        for e in engines.all():
+            template_source_loaders.extend(e.engine.get_template_loaders(e.engine.loaders))
+
         loaders = []
         # If template loader is CachedTemplateLoader, return the loaders
         # that it wraps around. So if we have
