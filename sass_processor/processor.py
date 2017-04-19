@@ -28,7 +28,7 @@ except NameError:
 class SassProcessor(object):
     storage = SassFileStorage()
     include_paths = list(getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', []))
-    prefix = iri_to_uri(getattr(settings, 'STATIC_URL', ''))
+    prefix = iri_to_uri(getattr(settings, 'STATIC_URL', '/static/'))
     try:
         sass_precision = int(settings.SASS_PRECISION)
     except (AttributeError, TypeError, ValueError):
