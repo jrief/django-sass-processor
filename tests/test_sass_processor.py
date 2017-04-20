@@ -10,7 +10,6 @@ import calendar
 from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase, override_settings
-from django.template import Context
 from django.template.loader import get_template
 
 
@@ -28,8 +27,7 @@ class SassProcessorTest(TestCase):
 
     def test_sass_src(self):
         template = get_template('tests/main.html')
-        context = Context({})
-        css_file = template.render(context)
+        css_file = template.render({})
         self.assertEqual('/static/tests/css/main.css', css_file)
         css_file = os.path.join(settings.STATIC_ROOT, 'tests/css/main.css')
         self.assertTrue(os.path.exists(css_file))
@@ -40,18 +38,18 @@ class SassProcessorTest(TestCase):
 
         # check if compilation is skipped file for a second invocation of `sass_src`
         timestamp = os.path.getmtime(css_file)
-        template.render(context)
+        template.render({})
         self.assertEqual(timestamp, os.path.getmtime(css_file))
 
         # removing `main.css.map` should trigger a recompilation
         os.remove(css_file + '.map')
-        template.render(context)
+        template.render({})
         self.assertTrue(os.path.exists(css_file + '.map'))
 
         # if `main.scss` is newer than `main.css`, recompile everything
         longago = calendar.timegm(datetime(2017, 1, 1).timetuple())
         os.utime(css_file, (longago, longago))
-        template.render(context)
+        template.render({})
         self.assertGreater(timestamp, os.path.getmtime(css_file))
 
     def test_sass_processor(self):

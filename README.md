@@ -304,6 +304,17 @@ references, such as ``<link href="/path/to/your/fonts/bootstrap/glyphicons-whate
 from you HTML templates.
 
 
+## Development
+
+To run the tests locally, clone the repository, create a new virtualenv,
+activate it and then run these commands:
+
+```shell
+cd django-sass-processor
+pip install tox
+tox
+```
+
 ## Changelog
 
 * 0.5.3
