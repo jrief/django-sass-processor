@@ -201,7 +201,7 @@ class SomeAdminOrFormClass(...):
     ...
     class Media:
          css = {
-            'all': (sass_processor('myapp/css/mystyle.scss'),)
+            'all': [sass_processor('myapp/css/mystyle.scss')],
         }
 ```
 
