@@ -1,6 +1,9 @@
 # django-sass-processor
 
-Processor to compile files from markup languages such as SASS/SCSS.
+Being annoyed having to run a Compass, Grunt or Gulp daemon while developing Django projects?
+
+Well, then this app is for you! Compile SASS/SCSS files on the fly without having to manage
+third party services nor special IDE plugins.
 
 [![Build Status](https://travis-ci.org/jrief/django-sass-processor.svg)](https://travis-ci.org/jrief/django-sass-processor)
 [![PyPI](https://img.shields.io/pypi/pyversions/django-sass-processor.svg)]()
@@ -85,23 +88,23 @@ Additionally, **django-sass-processor** will traverse all installed Django apps 
 and look into their static folders. If any of them contain a file matching the regular expression
 pattern ``^_.+\.(scss|sass)$`` (read: filename starts with an underscore and is of type ``scss`` or
 ``sass``), then that app specific static folder is added to the **libsass** include dirs. This
-feature can be disabled in your settings with
+feature can be disabled in your settings with:
 
 ```python
 SASS_PROCESSOR_AUTO_INCLUDE = False
 ```
 
-If inside of your SASS/SCSS files you also want to import (using ``@import "path/to/scssfile";``)
-files which do not start with an underscore, then you can configure another pattern in your
-settings, for instance
+If inside of your SASS/SCSS files, you also want to import (using ``@import "path/to/scssfile";``)
+files which do not start with an underscore, then you can configure another Regex pattern in your
+settings, for instance:
 
 ```python
 SASS_PROCESSOR_INCLUDE_FILE_PATTERN = r'^.+\.scss$'
 ```
 
 will look for all files of type ``scss``. Remember that SASS/SCSS files which start with an
-underscore are intended to be imported by other SASS/SCSS files, while files starting with a letter
-are intended to be included by the HTML tag ``<link href="{% sass_src 'path/to/file' %}" ...>``.
+underscore, are intended to be imported by other SASS/SCSS files, while files starting with a
+letter or number are intended to be included by the HTML tag ``<link href="{% sass_src 'path/to/file' %}" ...>``.
 
 During development, or when ``SASS_PROCESSOR_ENABLED = True``, the compiled file is placed into the
 folder referenced by ``SASS_PROCESSOR_ROOT`` (if unset, this setting defaults to ``STATIC_ROOT``).
@@ -216,35 +219,35 @@ class SomeAdminOrFormClass(...):
 
 If you want to precompile all occurrences of your SASS/SCSS files for the whole project, on the
 command line invoke:
-```
+```shell
 ./manage.py compilescss
 ```
 This is useful for preparing production environments, where SASS/SCSS files can't be compiled on
 the fly.
 
 To simplify the deployment, the compiled ``*.css`` files are stored side-by-side with their
-corresponding SASS/SCSS files; just run
+corresponding SASS/SCSS files. After compiling the files run
 ```
 ./manage.py collectstatic
-```
-afterwards.
+```shell
+as you would in a normal deployment.
 
 In case you don't want to expose the SASS/SCSS files in a production environment,
-deploy with
-```
+deploy with:
+```shell
 ./manage.py collectstatic --ignore=.scss
 ```
 
-In case you want to get rid of the compiled ``*.css`` files in your local static directories, simply
-reverse the above command:
-```
+To get rid of the compiled ``*.css`` files in your local static directories, simply reverse the
+above command:
+```shell
 ./manage.py compilescss --delete-files
 ```
 This will remove all occurrences of previously generated ``*.css`` files.
 
-Or you may direct compile results to the ``SASS_PROCESSOR_ROOT`` directory (if not specified - to
+Or you may compile results to the ``SASS_PROCESSOR_ROOT`` directory directy (if not specified - to
 ``STATIC_ROOT``):
-```
+```shell
 ./manage.py compilescss --use-processor-root
 ```
 Combine with ``--delete-files`` switch to purge results from there.
@@ -255,7 +258,7 @@ If you use an alternative templating engine set its name in ``--engine`` argumen
 set up ``COMPRESS_JINJA2_GET_ENVIRONMENT`` to configure jinja2 engine support.
 
 During offline compilation **django-sass-processor** parses all Python files and looks for
-invokations of ``sass_processor('path/to/sassfile.scss')``. Therefore the string specifying
+invocations of ``sass_processor('path/to/sassfile.scss')``. Therefore the string specifying
 the filename must be hard coded and shall not be concatenated or being somehow generated.
 
 
@@ -275,9 +278,9 @@ done through a ``_variables.scss`` file, but this inhibits a configuration throu
 
 To avoid the need for duplicate configuration settings, **django-sass-processor** offers a SASS
 function to fetch any arbitrary configuration from the project's ``settings.py``. This is specially
-handy for setting the include path of your Glyphicons font directory. Assume, Bootstrap-SASS has
-been installed using:
-```
+handy to set the include path of your Glyphicons font directory. Assume, Bootstrap-SASS has been
+installed using:
+```bash
 npm install bootstrap-sass
 ```
 
@@ -294,8 +297,9 @@ STATICFILES_DIRS = [
 NODE_MODULES_URL = STATIC_URL + 'node_modules/'
 ```
 
-With the SASS function ``get-setting``, you now can override any SASS variable with a configurable
-value. For the Glyphicons font search path, add this to your ``_variables.scss``:
+With the SASS function ``get-setting``, it now is possible to override any SASS variable with a
+value configured in the project's ``settings.py``. For the Glyphicons font search path, add this
+to your ``_variables.scss``:
 
 ```
 $icon-font-path: unquote(get-setting(NODE_MODULES_URL) + "bootstrap-sass/assets/fonts/bootstrap/");
@@ -308,8 +312,8 @@ from you HTML templates.
 
 ## Development
 
-To run the tests locally, clone the repository, create a new virtualenv,
-activate it and then run these commands:
+To run the tests locally, clone the repository, create a new virtualenv, activate it and then run
+these commands:
 
 ```shell
 cd django-sass-processor
@@ -318,6 +322,10 @@ tox
 ```
 
 ## Changelog
+
+* 0.5.4
+- Added unit tests and continuous integration to the project.
+
 
 * 0.5.3
 - Fixed compilescss: Did not find calls of sass_processor within a dict, list or tuple
