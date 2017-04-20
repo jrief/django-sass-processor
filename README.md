@@ -3,8 +3,10 @@
 Processor to compile files from markup languages such as SASS/SCSS.
 
 [![Build Status](https://travis-ci.org/jrief/django-sass-processor.svg)](https://travis-ci.org/jrief/django-sass-processor)
+[![PyPI](https://img.shields.io/pypi/pyversions/django-sass-processor.svg)]()
 [![PyPI version](https://img.shields.io/pypi/v/django-sass-processor.svg)](https://https://pypi.python.org/pypi/django-sass-processor)
-[![Twitter Follow](https://img.shields.io/twitter/follow/shields_io.svg?style=social&label=Jacob_Rief&maxAge=2592000)](https://twitter.com/jacobrief)
+[![PyPI](https://img.shields.io/pypi/l/django-sass-processor.svg)]()
+[![Twitter Follow](https://img.shields.io/twitter/follow/shields_io.svg?style=social&label=Follow&maxAge=2592000)](https://twitter.com/jacobrief)
 
 **django-sass-processor** converts ``*.scss`` or ``*.sass`` files into ``*.css`` while rendering
 templates. For performance reasons this is done only once, since the preprocessor keeps track on
