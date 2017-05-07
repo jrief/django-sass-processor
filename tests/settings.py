@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 import os
 
+from tests.jinja2 import environment
+
 SITE_ID = 1
 
 DATABASE_ENGINE = 'sqlite3'
@@ -49,6 +51,7 @@ TEMPLATES = [
         },
     }
 ]
+COMPRESS_JINJA2_GET_ENVIRONMENT = environment
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',

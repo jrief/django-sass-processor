@@ -88,25 +88,60 @@ class SassProcessorTest(TestCase):
         expected = '.bluebox{background-color:#0000ff}\n\n/*# sourceMappingURL=../../../../../../../../../static/tests/css/bluebox.css.map */'
         self.assertEqual(expected, output)
 
-    @override_settings(DEBUG=False)
-    def test_use_processor_root(self):
-        call_command('compilescss', use_processor_root=True)
-        css_file = os.path.join(settings.STATIC_ROOT, 'tests/css/main.css')
-        self.assertTrue(os.path.exists(css_file))
-        with open(css_file, 'r') as f:
-            output = f.read()
-        expected = '#main p{color:#00ff00;width:97%}#main p .redbox{background-color:#ff0000}#main p .redbox:hover{color:#000000}\n'
-        self.assertEqual(expected, output)
-
-    @override_settings(DEBUG=False)
-    def test_management_command(self):
-        call_command('compilescss')
-        css_file = os.path.join(settings.PROJECT_ROOT, 'static/tests/css/main.css')
+    def assert_management_command(self, **kwargs):
+        call_command(
+            'compilescss',
+            **kwargs
+        )
+        if kwargs.get('use_processor_root', False):
+            css_file = os.path.join(settings.STATIC_ROOT, 'tests/css/main.css')
+        else:
+            css_file = os.path.join(settings.PROJECT_ROOT, 'static/tests/css/main.css')
         with open(css_file, 'r') as f:
             output = f.read()
         expected = '#main p{color:#00ff00;width:97%}#main p .redbox{background-color:#ff0000}#main p .redbox:hover{color:#000000}\n'
         self.assertEqual(expected, output)
         self.assertFalse(os.path.exists(css_file + '.map'))
 
-        call_command('compilescss', delete_files=True)
-        self.assertFalse(os.path.exists(css_file))
+        if not kwargs.get('use_processor_root', False):
+            call_command('compilescss', delete_files=True)
+            self.assertFalse(os.path.exists(css_file))
+
+    @override_settings(DEBUG=False)
+    def test_management_command_django(self):
+        self.assert_management_command(
+            engine='django'
+        )
+
+    @override_settings(DEBUG=False)
+    def test_management_command_jinja2(self):
+        self.assert_management_command(
+            engine='jinja2'
+        )
+
+    @override_settings(DEBUG=False)
+    def test_management_command_multiple(self):
+        self.assert_management_command(
+            engine=['jinja2', 'django']
+        )
+
+    @override_settings(DEBUG=False)
+    def test_use_processor_root_django(self):
+        self.assert_management_command(
+            engine='django',
+            use_processor_root=True
+        )
+
+    @override_settings(DEBUG=False)
+    def test_use_processor_root_jinja2(self):
+        self.assert_management_command(
+            engine='jinja2',
+            use_processor_root=True
+        )
+
+    @override_settings(DEBUG=False)
+    def test_use_processor_root_multiple(self):
+        self.assert_management_command(
+            engine=['jinja2', 'django'],
+            use_processor_root=True
+        )
