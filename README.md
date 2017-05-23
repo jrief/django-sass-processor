@@ -246,7 +246,7 @@ as you would in a normal deployment.
 In case you don't want to expose the SASS/SCSS files in a production environment,
 deploy with:
 ```shell
-./manage.py collectstatic --ignore=.scss
+./manage.py collectstatic --ignore=*.scss
 ```
 
 To get rid of the compiled ``*.css`` files in your local static directories, simply reverse the
