@@ -110,7 +110,7 @@ class SassProcessor(object):
         with open(sourcemap_file, 'r') as fp:
             sourcemap = json.load(fp)
         for srcfilename in sourcemap.get('sources'):
-            components = os.path.normpath(srcfilename).split(os.path.sep)
+            components = os.path.normpath(srcfilename).split('/')
             srcfilename = ''.join([os.path.sep + c for c in components if c != os.path.pardir])
             if not os.path.isfile(srcfilename) or os.stat(srcfilename).st_mtime > sourcemap_mtime:
                 # at least one of the source is younger that the sourcemap referring it
