@@ -2,31 +2,32 @@
 from __future__ import unicode_literals
 
 import os
+
 import ast
 import sass
-from importlib import import_module
-
+from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
 from django.apps import apps
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
 from django.core.files.base import ContentFile
-from django.template.loader import get_template  # in order to preload template locations
+from django.core.management.base import BaseCommand, CommandError
+from django.template import engines
 from django.template.base import Origin
+from django.template.loader import \
+    get_template  # in order to preload template locations
 from django.utils.encoding import force_bytes
 from django.utils.translation import gettext_lazy as _
-
-from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
-
+from importlib import import_module
 from sass_processor.apps import APPS_INCLUDE_DIRS
-from sass_processor.templatetags.sass_tags import SassSrcNode
 from sass_processor.processor import SassProcessor
 from sass_processor.storage import SassFileStorage, find_file
+from sass_processor.templatetags.sass_tags import SassSrcNode
 from sass_processor.utils import get_setting
 
 __all__ = ['get_template', 'Command']
 
 
 class FuncCallVisitor(ast.NodeVisitor):
+
     def __init__(self, func_name):
         self.func_name = func_name
         self.sass_files = []
@@ -49,7 +50,7 @@ class Command(BaseCommand):
         self.parser = None
         self.template_exts = getattr(settings, 'SASS_TEMPLATE_EXTS', ['.html'])
         self.sass_output_style = getattr(settings, 'SASS_OUTPUT_STYLE',
-            'nested' if settings.DEBUG else 'compressed')
+                                         'nested' if settings.DEBUG else 'compressed')
         self.use_static_root = False
         self.static_root = ''
         super(Command, self).__init__()
@@ -80,45 +81,38 @@ class Command(BaseCommand):
             '--sass-precision',
             dest='sass_precision',
             type=int,
-            help=_("Set the precision for numeric computations in the SASS processor. Default: settings.SASS_PRECISION.")
+            help=_(
+                "Set the precision for numeric computations in the SASS processor. Default: settings.SASS_PRECISION.")
         )
 
-    def handle(self, *args, **options):
-        self.verbosity = int(options['verbosity'])
-        self.delete_files = options['delete_files']
-        self.use_static_root = options['use_processor_root']
-        if self.use_static_root:
-            self.static_root = getattr(settings, 'SASS_PROCESSOR_ROOT', settings.STATIC_ROOT)
-        self.parser = self.get_parser(options['engine'])
-        try:
-            self.sass_precision = int(options['sass_precision'] or settings.SASS_PRECISION)
-        except (AttributeError, TypeError, ValueError):
-            self.sass_precision = None
-
-        self.processed_files = []
-
-        # find all Python files making up this project; They might invoke `sass_processor`
-        for py_source in self.find_sources():
-            self.parse_source(py_source)
-            if self.verbosity > 0:
-                self.stdout.write(".", ending="")
-
-        # find all Django/Jinja2 templates making up this project; They might invoke `sass_src`
-        templates = self.find_templates()
-        for template_name in templates:
-            self.parse_template(template_name)
-            if self.verbosity > 0:
-                self.stdout.write(".", ending="")
-
-        # summarize what has been done
-        if self.verbosity > 0:
-            self.stdout.write("")
-            if self.delete_files:
-                msg = "Successfully deleted {0} previously generated `*.css` files."
-                self.stdout.write(msg.format(len(self.processed_files)))
+    def get_loaders(self):
+        template_source_loaders = []
+        for e in engines.all():
+            if hasattr(e, 'engine'):
+                template_source_loaders.extend(
+                    e.engine.get_template_loaders(
+                        e.engine.loaders
+                    )
+                )
+        loaders = []
+        # If template loader is CachedTemplateLoader, return the loaders
+        # that it wraps around. So if we have
+        # TEMPLATE_LOADERS = (
+        #    ('django.template.loaders.cached.Loader', (
+        #        'django.template.loaders.filesystem.Loader',
+        #        'django.template.loaders.app_directories.Loader',
+        #    )),
+        # )
+        # The loaders will return django.template.loaders.filesystem.Loader
+        # and django.template.loaders.app_directories.Loader
+        # The cached Loader and similar ones include a 'loaders' attribute
+        # so we look for that.
+        for loader in template_source_loaders:
+            if hasattr(loader, 'loaders'):
+                loaders.extend(loader.loaders)
             else:
-                msg = "Successfully compiled {0} referred SASS/SCSS files."
-                self.stdout.write(msg.format(len(self.processed_files)))
+                loaders.append(loader)
+        return loaders
 
     def get_parser(self, engine):
         if engine == "jinja2":
@@ -129,9 +123,53 @@ class Command(BaseCommand):
             from compressor.offline.django import DjangoParser
             parser = DjangoParser(charset=settings.FILE_CHARSET)
         else:
-            raise CommandError("Invalid templating engine '{}' specified.".format(engine))
+            raise CommandError(
+                "Invalid templating engine '{engine}' specified.".format(
+                    engine=engine
+                )
+            )
 
         return parser
+
+    def handle(self, *args, **options):
+        self.verbosity = int(options['verbosity'])
+        self.delete_files = options['delete_files']
+        self.use_static_root = options['use_processor_root']
+        if self.use_static_root:
+            self.static_root = getattr(settings, 'SASS_PROCESSOR_ROOT', settings.STATIC_ROOT)
+
+        engines = [e.strip() for e in options.get("engines", [])] or ["django"]
+        for engine in engines:
+            self.parser = self.get_parser(engine)
+            try:
+                self.sass_precision = int(options['sass_precision'] or settings.SASS_PRECISION)
+            except (AttributeError, TypeError, ValueError):
+                self.sass_precision = None
+
+            self.processed_files = []
+
+            # find all Python files making up this project; They might invoke `sass_processor`
+            for py_source in self.find_sources():
+                self.parse_source(py_source)
+                if self.verbosity > 0:
+                    self.stdout.write(".", ending="")
+
+            # find all Django/Jinja2 templates making up this project; They might invoke `sass_src`
+            templates = self.find_templates()
+            for template_name in templates:
+                self.parse_template(template_name)
+                if self.verbosity > 0:
+                    self.stdout.write(".", ending="")
+
+            # summarize what has been done
+            if self.verbosity > 0:
+                self.stdout.write("")
+                if self.delete_files:
+                    msg = "Successfully deleted {0} previously generated `*.css` files."
+                    self.stdout.write(msg.format(len(self.processed_files)))
+                else:
+                    msg = "Successfully compiled {0} referred SASS/SCSS files."
+                    self.stdout.write(msg.format(len(self.processed_files)))
 
     def find_sources(self):
         """
@@ -177,48 +215,25 @@ class Command(BaseCommand):
         for loader in self.get_loaders():
             try:
                 module = import_module(loader.__module__)
-                get_template_sources = getattr(module, 'get_template_sources', loader.get_template_sources)
+                get_template_sources = getattr(
+                    module, 'get_template_sources', loader.get_template_sources)
                 template_sources = get_template_sources('')
                 paths.update([t.name if isinstance(t, Origin) else t for t in template_sources])
             except (ImportError, AttributeError):
                 pass
         if not paths:
-            raise CommandError("No template paths found. None of the configured template loaders provided template paths")
+            raise CommandError(
+                "No template paths found. None of the configured template loaders provided template paths")
         templates = set()
         for path in paths:
             for root, _, files in os.walk(str(path)):
                 templates.update(os.path.join(root, name)
-                    for name in files if not name.startswith('.') and
-                        any(name.endswith(ext) for ext in self.template_exts))
+                                 for name in files if not name.startswith('.') and
+                                 any(name.endswith(ext) for ext in self.template_exts))
         if not templates:
-            raise CommandError("No templates found. Make sure your TEMPLATE_LOADERS and TEMPLATE_DIRS settings are correct.")
+            raise CommandError(
+                "No templates found. Make sure your TEMPLATE_LOADERS and TEMPLATE_DIRS settings are correct.")
         return templates
-
-    def get_loaders(self):
-        from django.template import engines
-        template_source_loaders = []
-        for e in engines.all():
-            template_source_loaders.extend(e.engine.get_template_loaders(e.engine.loaders))
-
-        loaders = []
-        # If template loader is CachedTemplateLoader, return the loaders
-        # that it wraps around. So if we have
-        # TEMPLATE_LOADERS = (
-        #    ('django.template.loaders.cached.Loader', (
-        #        'django.template.loaders.filesystem.Loader',
-        #        'django.template.loaders.app_directories.Loader',
-        #    )),
-        # )
-        # The loaders will return django.template.loaders.filesystem.Loader
-        # and django.template.loaders.app_directories.Loader
-        # The cached Loader and similar ones include a 'loaders' attribute
-        # so we look for that.
-        for loader in template_source_loaders:
-            if hasattr(loader, 'loaders'):
-                loaders.extend(loader.loaders)
-            else:
-                loaders.append(loader)
-        return loaders
 
     def parse_template(self, template_name):
         try:
@@ -237,7 +252,8 @@ class Command(BaseCommand):
             return
         except UnicodeDecodeError:
             if self.verbosity > 0:
-                self.stderr.write("\nUnicodeDecodeError while trying to read template {}".format(template_name))
+                self.stderr.write(
+                    "\nUnicodeDecodeError while trying to read template {}".format(template_name))
         try:
             nodes = list(self.walk_nodes(template, original=template))
         except Exception as e:

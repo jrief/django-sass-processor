@@ -20,8 +20,7 @@ corresponding generated CSS file.
 ## Introduction
 
 This Django app provides a templatetag ``{% sass_src 'path/to/file.scss' %}``, which can be used
-instead of the built-in templatetag ``static``. Since version 0.3.4 this also works for Jinja2
-templates.
+instead of the built-in templatetag ``static``. This templatetag also works inside Jinja2 templates.
 
 If SASS/SCSS files shall be referenced through the ``Media`` class, or ``media`` property, the SASS
 processor can be used directly.
@@ -104,7 +103,8 @@ SASS_PROCESSOR_INCLUDE_FILE_PATTERN = r'^.+\.scss$'
 
 will look for all files of type ``scss``. Remember that SASS/SCSS files which start with an
 underscore, are intended to be imported by other SASS/SCSS files, while files starting with a
-letter or number are intended to be included by the HTML tag ``<link href="{% sass_src 'path/to/file' %}" ...>``.
+letter or number are intended to be included by the HTML tag
+``<link href="{% sass_src 'path/to/file.scss' %}" ...>``.
 
 During development, or when ``SASS_PROCESSOR_ENABLED = True``, the compiled file is placed into the
 folder referenced by ``SASS_PROCESSOR_ROOT`` (if unset, this setting defaults to ``STATIC_ROOT``).
@@ -131,7 +131,7 @@ STATICFILES_FINDERS = [
 Integer `SASS_PRECISION` sets floating point precision for output css. libsass'
 default is ``5``. Note: **bootstrap-sass** requires ``8``, otherwise various
 layout problems _will_ occur.
-```
+```python
 SASS_PRECISION = 8
 ```
 
@@ -143,7 +143,7 @@ Note: **libsass-python** 0.8.3 has [problem encoding result while saving on
 Windows](https://github.com/dahlia/libsass-python/pull/82), the issue is already
 fixed and will be included in future `pip` package release, in the meanwhile
 avoid ``compressed`` output style.
-```
+```python
 SASS_OUTPUT_STYLE = 'compact'
 ```
 
@@ -169,7 +169,11 @@ This is covered in the [Upgrading templates documentation](https://docs.djangopr
 
 In `yourapp/jinja2.py`:
 ```python
+# Include this for Python 2.
+from __future__ import absolute_import
+
 from jinja2 import Environment
+
 
 def environment(**kwargs):
     extensions = [] if 'extensions' not in kwargs else kwargs['extensions']
@@ -177,6 +181,13 @@ def environment(**kwargs):
     kwargs['extensions'] = extensions
 
     return Environment(**kwargs)
+```
+
+If you want to make use of the `compilescss` command, then you will also have to add the following to your settings:
+```python
+from yourapp.jinja2 import environment
+
+COMPRESS_JINJA2_GET_ENVIRONMENT = environment
 ```
 
 ## Usage
@@ -222,20 +233,21 @@ command line invoke:
 ```shell
 ./manage.py compilescss
 ```
+
 This is useful for preparing production environments, where SASS/SCSS files can't be compiled on
 the fly.
 
 To simplify the deployment, the compiled ``*.css`` files are stored side-by-side with their
 corresponding SASS/SCSS files. After compiling the files run
-```
-./manage.py collectstatic
 ```shell
+./manage.py collectstatic
+```
 as you would in a normal deployment.
 
 In case you don't want to expose the SASS/SCSS files in a production environment,
 deploy with:
 ```shell
-./manage.py collectstatic --ignore=.scss
+./manage.py collectstatic --ignore=*.scss
 ```
 
 To get rid of the compiled ``*.css`` files in your local static directories, simply reverse the
@@ -277,10 +289,10 @@ done through a ``_variables.scss`` file, but this inhibits a configuration throu
 ``settings.py``.
 
 To avoid the need for duplicate configuration settings, **django-sass-processor** offers a SASS
-function to fetch any arbitrary configuration from the project's ``settings.py``. This is specially
-handy to set the include path of your Glyphicons font directory. Assume, Bootstrap-SASS has been
-installed using:
-```bash
+function to fetch any arbitrary configuration directive from the project's ``settings.py``. This
+is specially handy to set the include path of your Glyphicons font directory. Assume, Bootstrap-SASS
+has been installed using:
+```shell
 npm install bootstrap-sass
 ```
 
