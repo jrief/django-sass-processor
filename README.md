@@ -340,6 +340,9 @@ tox
 
 ## Changelog
 
+* 0.5.5
+- Create directory ``SASS_PROCESSOR_ROOT`` if it does not exist.
+
 * 0.5.4
 - Added unit tests and continuous integration to the project.
 

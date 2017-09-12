@@ -14,7 +14,7 @@ except ImportError:
             return fd.read()
 
 CLASSIFIERS = [
-    'Development Status :: 4 - Beta',
+    'Development Status :: 5 - Production',
     'Environment :: Web Environment',
     'Framework :: Django',
     'Intended Audience :: Developers',
