@@ -117,6 +117,11 @@ in the directory referred by ``SASS_PROCESSOR_ROOT`` (or, if unset ``STATIC_ROOT
 your ``settings.py``. If there is no ``STATICFILES_FINDERS`` in your ``settings.py`` don't forget
 to include the **Django** [default finders](https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-STATICFILES_FINDERS).
 
+If the directory referred by ``SASS_PROCESSOR_ROOT`` does not exist, then **django-sass-processor**
+creates it. This does does not apply, if ``SASS_PROCESSOR_ROOT`` is unset and hence defaults to
+``STATIC_ROOT``. Therefore it is a good idea to otherwise use ``SASS_PROCESSOR_ROOT = STATIC_ROOT``
+in your ``settings.py``.
+
 ```python
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',

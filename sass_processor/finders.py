@@ -16,7 +16,11 @@ class CssFinder(FileSystemFinder):
     def __init__(self, apps=None, *args, **kwargs):
         location = getattr(settings, 'SASS_PROCESSOR_ROOT', settings.STATIC_ROOT)
         if not os.path.isdir(location):
-            return
+            try:
+                location = getattr(settings, 'SASS_PROCESSOR_ROOT')
+                os.makedirs(location)
+            except AttributeError:
+                return
         self.locations = [
             ('', location),
         ]
