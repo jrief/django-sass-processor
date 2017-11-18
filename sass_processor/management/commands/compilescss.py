@@ -6,6 +6,7 @@ import os
 import ast
 import sass
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
+from compressor.offline.jinja2 import Jinja2Parser
 from django.apps import apps
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -22,6 +23,7 @@ from sass_processor.processor import SassProcessor
 from sass_processor.storage import SassFileStorage, find_file
 from sass_processor.templatetags.sass_tags import SassSrcNode
 from sass_processor.utils import get_setting
+
 
 __all__ = ['get_template', 'Command']
 
@@ -73,8 +75,9 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             '--engine',
-            dest='engine',
-            default='django',
+            dest='engines',
+            default=['django'],
+            nargs='+',
             help=_("Set templating engine used (django, jinja2). Default: django.")
         )
         parser.add_argument(
@@ -94,6 +97,10 @@ class Command(BaseCommand):
                         e.engine.loaders
                     )
                 )
+            # Jinja2 template loaders
+            if hasattr(e, 'env'):
+                e.env.loader.env = e.env
+                template_source_loaders.append(e.env.loader)
         loaders = []
         # If template loader is CachedTemplateLoader, return the loaders
         # that it wraps around. So if we have
@@ -214,6 +221,10 @@ class Command(BaseCommand):
         paths = set()
         for loader in self.get_loaders():
             try:
+                # Jinja2 loader
+                if hasattr(loader, 'searchpath'):
+                    paths.update(loader.searchpath)
+                    continue
                 module = import_module(loader.__module__)
                 get_template_sources = getattr(
                     module, 'get_template_sources', loader.get_template_sources)
@@ -221,6 +232,7 @@ class Command(BaseCommand):
                 paths.update([t.name if isinstance(t, Origin) else t for t in template_sources])
             except (ImportError, AttributeError):
                 pass
+        templates = set()
         if not paths:
             raise CommandError(
                 "No template paths found. None of the configured template loaders provided template paths")
@@ -238,27 +250,29 @@ class Command(BaseCommand):
     def parse_template(self, template_name):
         try:
             template = self.parser.parse(template_name)
-        except IOError:  # unreadable file -> ignore
-            if self.verbosity > 0:
+        except IOError as e:  # unreadable file -> ignore
+
+            if self.verbosity > 1:
+                self.stderr.write('\n' + str(e))
                 self.stderr.write("\nUnreadable template at: {}".format(template_name))
             return
         except TemplateSyntaxError as e:  # broken template -> ignore
-            if self.verbosity > 0:
+            if self.verbosity > 1:
                 self.stderr.write("\nInvalid template {}: {}".format(template_name, e))
             return
         except TemplateDoesNotExist:  # non existent template -> ignore
-            if self.verbosity > 0:
+            if self.verbosity > 1:
                 self.stderr.write("\nNon-existent template at: {}".format(template_name))
             return
         except UnicodeDecodeError:
-            if self.verbosity > 0:
+            if self.verbosity > 1:
                 self.stderr.write(
                     "\nUnicodeDecodeError while trying to read template {}".format(template_name))
         try:
             nodes = list(self.walk_nodes(template, original=template))
         except Exception as e:
             # Could be an error in some base template
-            if self.verbosity > 0:
+            if self.verbosity > 1:
                 self.stderr.write("\nError parsing template {}: {}".format(template_name, e))
         else:
             for node in nodes:
@@ -321,15 +335,25 @@ class Command(BaseCommand):
         """
         Iterate over the nodes recursively yielding the templatetag 'sass_src'
         """
-        try:
-            # try with django-compressor<2.1
-            nodelist = self.parser.get_nodelist(node, original=original)
-        except TypeError:
-            nodelist = self.parser.get_nodelist(node, original=original, context=None)
+        is_jinja2_parser = isinstance(self.parser, Jinja2Parser)
+        if is_jinja2_parser:
+            nodelist = self.parser.get_nodelist(node)
+        else:
+            try:
+                # try with django-compressor<2.1
+                nodelist = self.parser.get_nodelist(node, original=original)
+            except TypeError:
+                nodelist = self.parser.get_nodelist(node, original=original, context=None)
+
         for node in nodelist:
-            if isinstance(node, SassSrcNode):
-                if node.is_sass:
+            if is_jinja2_parser:
+                subnode = getattr(node, 'node', None)
+                if subnode is not None and getattr(subnode, 'identifier', None) == 'sass_processor.jinja2.ext.SassSrc':
                     yield node
             else:
-                for node in self.walk_nodes(node, original=original):
-                    yield node
+                if isinstance(node, SassSrcNode):
+                    if node.is_sass:
+                        yield node
+                    break
+            for node in self.walk_nodes(node, original=original):
+                yield node

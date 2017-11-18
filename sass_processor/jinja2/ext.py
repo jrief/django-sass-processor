@@ -19,6 +19,7 @@ class SassSrc(Extension):
                 nodes.Const(parser.filename)
             ]
         )
+        call.path = path.value
         return nodes.Output(
             [call],
             lineno=lineno
