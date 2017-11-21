@@ -26,4 +26,4 @@ class SassSrc(Extension):
 
     def _sass_src_support(self, path, source_file):
         sass_processor = SassProcessor(source_file)
-        return sass_processor(path)
+        return SassProcessor.handle_simple(sass_processor(path))
