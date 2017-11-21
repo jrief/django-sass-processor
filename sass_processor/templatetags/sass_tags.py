@@ -35,15 +35,15 @@ class SassSrcNode(Node):
 
     def render(self, context):
         try:
-            path = self.sass_processor.resolve_path(context)
-            url = self.sass_processor(path)
+            path = self.sass_processor(self.sass_processor.resolve_path(context))
         except AttributeError as e:
             msg = "No sass/scss file specified while rendering tag 'sass_src' in template {} ({})"
             raise TemplateSyntaxError(msg.format(context.template_name, e))
         except FileNotFoundError as e:
             msg = str(e) + " while rendering tag 'sass_src' in template {}"
             raise TemplateSyntaxError(msg.format(context.template_name))
-        return url
+        return SassProcessor.handle_simple(path)
+
 
 @register.tag(name='sass_src')
 def render_sass_src(parser, token):

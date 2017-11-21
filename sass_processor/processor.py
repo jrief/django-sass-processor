@@ -3,12 +3,14 @@ from __future__ import unicode_literals
 
 import os
 import json
+from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
 from django.template import Context
-from django.utils.encoding import force_bytes, iri_to_uri
-from django.utils.six.moves.urllib.parse import urljoin
+from django.templatetags.static import PrefixNode
+from django.utils.encoding import force_bytes
+from django.utils.six.moves.urllib.parse import quote, urljoin
 from sass_processor.utils import get_setting
 
 from .storage import SassFileStorage, find_file
@@ -28,7 +30,6 @@ except NameError:
 class SassProcessor(object):
     storage = SassFileStorage()
     include_paths = list(getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', []))
-    prefix = iri_to_uri(getattr(settings, 'STATIC_URL', '/static/'))
     try:
         sass_precision = int(settings.SASS_PRECISION)
     except (AttributeError, TypeError, ValueError):
@@ -51,16 +52,15 @@ class SassProcessor(object):
 
         if ext not in self.sass_extensions:
             # return the given path, since it ends neither in `.scss` nor in `.sass`
-            return urljoin(self.prefix, path)
+            return path
 
         # compare timestamp of sourcemap file with all its dependencies, and check if we must recompile
         css_filename = basename + '.css'
-        url = urljoin(self.prefix, css_filename)
         if not self.processor_enabled:
-            return url
+            return css_filename
         sourcemap_filename = css_filename + '.map'
         if find_file(css_filename) and self.is_latest(sourcemap_filename):
-            return url
+            return css_filename
 
         # with offline compilation, raise an error, if css file could not be found.
         if sass is None:
@@ -91,7 +91,7 @@ class SassProcessor(object):
         if self.storage.exists(sourcemap_filename):
             self.storage.delete(sourcemap_filename)
         self.storage.save(sourcemap_filename, ContentFile(sourcemap))
-        return url
+        return css_filename
 
     def resolve_path(self, context=None):
         if context is None:
@@ -117,7 +117,15 @@ class SassProcessor(object):
                 return False
         return True
 
+    @classmethod
+    def handle_simple(cls, path):
+        if apps.is_installed('django.contrib.staticfiles'):
+            from django.contrib.staticfiles.storage import staticfiles_storage
+            return staticfiles_storage.url(path)
+        else:
+            return urljoin(PrefixNode.handle_simple('STATIC_URL'), quote(path))
 
 _sass_processor = SassProcessor()
 def sass_processor(filename):
-    return _sass_processor(filename)
+    path = _sass_processor(filename)
+    return SassProcessor.handle_simple(path)

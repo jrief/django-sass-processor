@@ -12,6 +12,15 @@ class SassFileStorage(FileSystemStorage):
             base_url = settings.STATIC_URL
         super(SassFileStorage, self).__init__(location, base_url, *args, **kwargs)
 
+try:
+    from storages.backends.s3boto3 import S3Boto3Storage
+
+    class SassS3Boto3Storage(S3Boto3Storage):
+        base_url = '{}.s3.amazonaws.com'.format(settings.AWS_STORAGE_BUCKET_NAME)
+
+except ImportError:
+    pass
+
 
 def find_file(path):
     for finder in get_finders():
