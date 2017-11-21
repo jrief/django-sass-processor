@@ -340,6 +340,10 @@ tox
 
 ## Changelog
 
+* 0.5.6
+- Added compatibility layer to work with AWS S3 Storage.
+
+
 * 0.5.5
 - Create directory ``SASS_PROCESSOR_ROOT`` if it does not exist.
 
