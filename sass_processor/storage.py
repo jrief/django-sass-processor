@@ -18,7 +18,7 @@ try:
     class SassS3Boto3Storage(S3Boto3Storage):
         base_url = '{}.s3.amazonaws.com'.format(settings.AWS_STORAGE_BUCKET_NAME)
 
-except ImportError:
+except (AttributeError, ImportError):
     pass
 
 
