@@ -3,6 +3,7 @@ import os
 from collections import OrderedDict
 from django.conf import settings
 from django.contrib.staticfiles.finders import FileSystemFinder
+from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import FileSystemStorage
 
 
@@ -15,6 +16,9 @@ class CssFinder(FileSystemFinder):
 
     def __init__(self, apps=None, *args, **kwargs):
         location = getattr(settings, 'SASS_PROCESSOR_ROOT', settings.STATIC_ROOT)
+        if not location:
+            msg = "Neither 'SASS_PROCESSOR_ROOT' nor 'STATIC_ROOT' has been declared in project settings."
+            raise ImproperlyConfigured(msg)
         if not os.path.isdir(location):
             try:
                 location = getattr(settings, 'SASS_PROCESSOR_ROOT')
