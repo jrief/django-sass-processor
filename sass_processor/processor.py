@@ -42,6 +42,8 @@ class SassProcessor(object):
         'nested' if settings.DEBUG else 'compressed')
     processor_enabled = getattr(settings, 'SASS_PROCESSOR_ENABLED', settings.DEBUG)
     sass_extensions = ('.scss', '.sass')
+    node_modules_dir = dict(getattr(settings, 'STATICFILES_DIRS', [])).get('node_modules')
+    node_npx_path = getattr(settings, 'NODE_NPX_PATH', 'npx')
 
     def __init__(self, path=None):
         self._path = path
@@ -85,17 +87,21 @@ class SassProcessor(object):
         if self.sass_output_style:
             compile_kwargs['output_style'] = self.sass_output_style
         content, sourcemap = sass.compile(**compile_kwargs)
-        postcss = os.path.join(os.path.dirname(__file__), 'postcss.js')
-        os.environ['NODE_PATH'] = '/Users/jrief/Workspace/Awesto/www.django-shop.org/node_modules'
-        proc = subprocess.Popen(['/usr/local/bin/node', postcss], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        proc.stdin.write(force_bytes(content))
-        proc.stdin.close()
-        content2 = proc.stdout.read()
+        if os.path.isdir(self.node_modules_dir or ''):
+            os.environ['NODE_PATH'] = self.node_modules_dir
+            try:
+                proc = subprocess.Popen([self.node_npx_path, 'postcss', '--use autoprefixer', '--no-map'],
+                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                proc.stdin.write(force_bytes(content))
+                proc.stdin.close()
+                content = proc.stdout.read()
+                proc.wait()
+            except (FileNotFoundError, BrokenPipeError):
+                content = force_bytes(content)
         sourcemap = force_bytes(sourcemap)
         if self.storage.exists(css_filename):
             self.storage.delete(css_filename)
-        self.storage.save(css_filename, ContentFile(force_bytes(content)))
-        proc.wait()
+        self.storage.save(css_filename, ContentFile(content))
         if self.storage.exists(sourcemap_filename):
             self.storage.delete(sourcemap_filename)
         self.storage.save(sourcemap_filename, ContentFile(sourcemap))
