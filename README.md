@@ -231,7 +231,7 @@ class SomeAdminOrFormClass(...):
 ```
 
 
-## Add vendor prefixes to CSS rules using values from [https://caniuse.com/](Can I Use)
+## Add vendor prefixes to CSS rules using values from https://caniuse.com/
 
 Writing SCSS shall be fast and easy and you should not have to care, whether to add vendor specific
 prefixes to your CSS directives. Unfortunately there is no pure Python package to solve this, but
@@ -256,7 +256,7 @@ In case ``npx`` can not be found in your system path, use the settings directive
 ``NODE_NPX_PATH = /path/to/npx`` to point to that executable.
 
 If everything is setup correctly, **django-sass-processor** adds all required vendor prefixes to
-the compiles CSS file. For further information, refer to the
+the compiled CSS files. For further information, refer to the
 [Autoprefixer](https://github.com/postcss/autoprefixer) package.
 
 ## Offline compilation
