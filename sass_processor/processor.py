@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import io
 import os
 import json
+import subprocess
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -83,11 +85,17 @@ class SassProcessor(object):
         if self.sass_output_style:
             compile_kwargs['output_style'] = self.sass_output_style
         content, sourcemap = sass.compile(**compile_kwargs)
-        content = force_bytes(content)
+        postcss = os.path.join(os.path.dirname(__file__), 'postcss.js')
+        os.environ['NODE_PATH'] = '/Users/jrief/Workspace/Awesto/www.django-shop.org/node_modules'
+        proc = subprocess.Popen(['/usr/local/bin/node', postcss], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        proc.stdin.write(force_bytes(content))
+        proc.stdin.close()
+        content2 = proc.stdout.read()
         sourcemap = force_bytes(sourcemap)
         if self.storage.exists(css_filename):
             self.storage.delete(css_filename)
-        self.storage.save(css_filename, ContentFile(content))
+        self.storage.save(css_filename, ContentFile(force_bytes(content)))
+        proc.wait()
         if self.storage.exists(sourcemap_filename):
             self.storage.delete(sourcemap_filename)
         self.storage.save(sourcemap_filename, ContentFile(sourcemap))
@@ -107,7 +115,7 @@ class SassProcessor(object):
         if not sourcemap_file or not os.path.isfile(sourcemap_file):
             return False
         sourcemap_mtime = os.stat(sourcemap_file).st_mtime
-        with open(sourcemap_file, 'r') as fp:
+        with io.open(sourcemap_file, 'r') as fp:
             sourcemap = json.load(fp)
         for srcfilename in sourcemap.get('sources'):
             components = os.path.normpath(srcfilename).split('/')
