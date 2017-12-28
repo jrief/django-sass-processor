@@ -5,6 +5,7 @@ import re
 import os
 from django.apps import apps, AppConfig
 from django.conf import settings
+from django.contrib.staticfiles.finders import AppDirectoriesFinder
 from django.core.files.storage import get_storage_class
 
 
@@ -21,7 +22,7 @@ class SassProcessorConfig(AppConfig):
         if self._auto_include:
             app_configs = apps.get_app_configs()
             for app_config in app_configs:
-                static_dir = os.path.join(app_config.path, self._storage.base_url.strip(os.path.sep))
+                static_dir = os.path.join(app_config.path, AppDirectoriesFinder.source_dir)
                 if os.path.isdir(static_dir):
                     self.traverse_tree(static_dir)
 
