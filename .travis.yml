@@ -7,9 +7,15 @@ python:
   - 3.6
 
 env:
+  - DJANGOVER=django20
   - DJANGOVER=django19
   - DJANGOVER=django110
   - DJANGOVER=django111
+
+matrix:
+  exclude:
+    - python: 2.7
+      env: DJANGOVER=django20
 
 install:
   - pip install tox
