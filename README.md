@@ -329,8 +329,8 @@ from you HTML templates.
 ## Serving static files with S3
 
 A custom Storage class is provided for use if your deployment serves css files out of S3. You must have Boto 3 installed. To use it, add this to your settings file:
-```from sass_processor.staorage import SassS3Boto3Storage
-STATICFILES_STORAGE = SassS3Boto3Storage
+```
+STATICFILES_STORAGE = 'sass_processor.storage.SassS3Boto3Storage'
 ```
 
 
