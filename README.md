@@ -355,7 +355,10 @@ tox
 
 ## Changelog
 
+- 0.5.7
+
 * _Potentially Breaking_: `libsass` is not autoinstalled as the dependency anymore.
+* Add support for Django-2.0.
 
 - 0.5.7
 
