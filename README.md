@@ -363,6 +363,14 @@ and `@import "variables";` whenever you need Glyphicons. You then can safely rem
 references, such as `<link href="/path/to/your/fonts/bootstrap/glyphicons-whatever.ttf" ...>`
 from you HTML templates.
 
+## Serving static files with S3
+
+A custom Storage class is provided for use if your deployment serves css files out of S3. You must have Boto 3 installed. To use it, add this to your settings file:
+```
+STATICFILES_STORAGE = 'sass_processor.storage.SassS3Boto3Storage'
+```
+
+
 ## Development
 
 To run the tests locally, clone the repository, create a new virtualenv, activate it and then run
@@ -376,7 +384,10 @@ tox
 
 ## Changelog
 
+- 0.5.8
+
 * _Potentially Breaking_: `libsass` is not autoinstalled as the dependency anymore.
+* Add support for Django-2.0.
 
 - 0.5.7
 
