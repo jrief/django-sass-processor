@@ -12,6 +12,7 @@ from django.core.files.base import ContentFile
 from django.template import Context
 from django.templatetags.static import PrefixNode
 from django.utils.encoding import force_bytes
+from django.utils import six
 from django.utils.six.moves.urllib.parse import quote, urljoin
 from sass_processor.utils import get_setting
 
@@ -23,9 +24,9 @@ try:
 except ImportError:
     sass = None
 
-try:
-    FileNotFoundError
-except NameError:
+if six.PY2:
+    import socket
+    BrokenPipeError = socket.error
     FileNotFoundError = IOError
 
 
@@ -93,7 +94,7 @@ class SassProcessor(object):
             os.environ['NODE_PATH'] = self.node_modules_dir
             try:
                 proc = subprocess.Popen([self.node_npx_path, 'postcss', '--use autoprefixer', '--no-map'],
-                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                                        stdin=subprocess.PIPE, stdout=subprocess.PIPE)
                 proc.stdin.write(force_bytes(content))
                 proc.stdin.close()
                 content = proc.stdout.read()
