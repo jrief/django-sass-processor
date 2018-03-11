@@ -5,6 +5,13 @@ Being annoyed having to run a Compass, Grunt or Gulp daemon while developing Dja
 Well, then this app is for you! Compile SASS/SCSS files on the fly without having to manage
 third party services nor special IDE plugins.
 
+
+### Other good reasons for using this library
+
+From now on, you refer SASS/SCSS files directly from your sources, instead of referring a compiled
+CSS file, hoping that some utility is creating it from a hidden SASS/SCSS file in your source tree.
+
+
 [![Build Status](https://travis-ci.org/jrief/django-sass-processor.svg)](https://travis-ci.org/jrief/django-sass-processor)
 [![PyPI](https://img.shields.io/pypi/pyversions/django-sass-processor.svg)]()
 [![PyPI version](https://img.shields.io/pypi/v/django-sass-processor.svg)](https://https://pypi.python.org/pypi/django-sass-processor)
