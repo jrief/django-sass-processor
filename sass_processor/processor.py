@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import io
 import os
 import json
 import subprocess
@@ -90,18 +89,21 @@ class SassProcessor(object):
         if self.sass_output_style:
             compile_kwargs['output_style'] = self.sass_output_style
         content, sourcemap = sass.compile(**compile_kwargs)
-        if os.path.isdir(self.node_modules_dir or ''):
+        content, sourcemap = force_bytes(content), force_bytes(sourcemap)
+
+        # autoprefix CSS files using postcss in external JavaScript process
+        if self.node_npx_path and os.path.isdir(self.node_modules_dir or ''):
             os.environ['NODE_PATH'] = self.node_modules_dir
             try:
-                proc = subprocess.Popen([self.node_npx_path, 'postcss', '--use autoprefixer', '--no-map'],
+                proc = subprocess.Popen([self.node_npx_path, 'postcss', '--use', 'autoprefixer', '--no-map'],
                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-                proc.stdin.write(force_bytes(content))
+                proc.stdin.write(content)
                 proc.stdin.close()
                 content = proc.stdout.read()
                 proc.wait()
             except (FileNotFoundError, BrokenPipeError):
-                content = force_bytes(content)
-        sourcemap = force_bytes(sourcemap)
+                pass
+
         if self.storage.exists(css_filename):
             self.storage.delete(css_filename)
         self.storage.save(css_filename, ContentFile(content))
@@ -124,7 +126,7 @@ class SassProcessor(object):
         if not sourcemap_file or not os.path.isfile(sourcemap_file):
             return False
         sourcemap_mtime = os.stat(sourcemap_file).st_mtime
-        with io.open(sourcemap_file, 'r') as fp:
+        with open(sourcemap_file, 'r') as fp:
             sourcemap = json.load(fp)
         for srcfilename in sourcemap.get('sources'):
             components = os.path.normpath(srcfilename).split('/')
