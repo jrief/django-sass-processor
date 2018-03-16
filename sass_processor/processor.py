@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import os
 import json
+import subprocess
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -10,6 +11,7 @@ from django.core.files.base import ContentFile
 from django.template import Context
 from django.templatetags.static import PrefixNode
 from django.utils.encoding import force_bytes
+from django.utils import six
 from django.utils.six.moves.urllib.parse import quote, urljoin
 from sass_processor.utils import get_setting
 
@@ -21,9 +23,9 @@ try:
 except ImportError:
     sass = None
 
-try:
-    FileNotFoundError
-except NameError:
+if six.PY2:
+    import socket
+    BrokenPipeError = socket.error
     FileNotFoundError = IOError
 
 
@@ -40,9 +42,13 @@ class SassProcessor(object):
         'nested' if settings.DEBUG else 'compressed')
     processor_enabled = getattr(settings, 'SASS_PROCESSOR_ENABLED', settings.DEBUG)
     sass_extensions = ('.scss', '.sass')
+    node_npx_path = getattr(settings, 'NODE_NPX_PATH', 'npx')
 
     def __init__(self, path=None):
         self._path = path
+        nmd = [d[1] for d in getattr(settings, 'STATICFILES_DIRS', [])
+               if isinstance(d, (list, tuple)) and d[0] == 'node_modules']
+        self.node_modules_dir = nmd[0] if len(nmd) else None
 
     def __call__(self, path):
         basename, ext = os.path.splitext(path)
@@ -83,8 +89,23 @@ class SassProcessor(object):
         if self.sass_output_style:
             compile_kwargs['output_style'] = self.sass_output_style
         content, sourcemap = sass.compile(**compile_kwargs)
-        content = force_bytes(content)
-        sourcemap = force_bytes(sourcemap)
+        content, sourcemap = force_bytes(content), force_bytes(sourcemap)
+
+        # autoprefix CSS files using postcss in external JavaScript process
+        if self.node_npx_path and os.path.isdir(self.node_modules_dir or ''):
+            os.environ['NODE_PATH'] = self.node_modules_dir
+            try:
+                options = [self.node_npx_path, 'postcss', '--use', 'autoprefixer']
+                if not settings.DEBUG:
+                    options.append('--no-map')
+                proc = subprocess.Popen(options, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                proc.stdin.write(content)
+                proc.stdin.close()
+                content = proc.stdout.read()
+                proc.wait()
+            except (FileNotFoundError, BrokenPipeError):
+                pass
+
         if self.storage.exists(css_filename):
             self.storage.delete(css_filename)
         self.storage.save(css_filename, ContentFile(content))

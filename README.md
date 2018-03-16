@@ -9,7 +9,11 @@ third party services nor special IDE plugins.
 ### Other good reasons for using this library
 
 From now on, you refer SASS/SCSS files directly from your sources, instead of referring a compiled
-CSS file, hoping that some utility is creating it from a hidden SASS/SCSS file in your source tree.
+CSS file, hoping that some other utility will create it from a SASS/SCSS file, hidden somewhere in
+your source tree.
+
+Use Django's settings for the configuration of pathes, box sizes etc., instead of having another
+SCSS specific file (typically ``_variables.scss``), to hold these.
 
 
 [![Build Status](https://travis-ci.org/jrief/django-sass-processor.svg)](https://travis-ci.org/jrief/django-sass-processor)
@@ -237,6 +241,38 @@ class SomeAdminOrFormClass(...):
         }
 ```
 
+## Add vendor prefixes to CSS rules using values from https://caniuse.com/
+
+Writing SCSS shall be fast and easy and you should not have to care, whether to add vendor specific
+prefixes to your CSS directives. Unfortunately there is no pure Python package to solve this, but
+with a few node modules, we can add this to our process chain.
+
+As superuser install
+
+```shell
+npm install -g npx
+```
+
+and inside your project root, install
+
+```shell
+npm install postcss-cli autoprefixer
+```
+
+Check that the path of ``node_modules`` corresponds to its entry in the settings directive
+``STATICFILES_DIRS`` (see below).
+
+In case ``npx`` can not be found in your system path, use the settings directive
+``NODE_NPX_PATH = /path/to/npx`` to point to that executable.
+
+If everything is setup correctly, **django-sass-processor** adds all required vendor prefixes to
+the compiled CSS files. For further information, refer to the
+[Autoprefixer](https://github.com/postcss/autoprefixer) package.
+
+To disable autoprefixing, even though ``postcss`` and ``autoprefixer`` is installed in
+``node_modules``, just set ``NODE_NPX_PATH = None``.
+
+
 ## Offline compilation
 
 If you want to precompile all occurrences of your SASS/SCSS files for the whole project, on the
@@ -361,6 +397,10 @@ tox
 ```
 
 ## Changelog
+
+- 0.6
+
+* Add autoprefixing via external postcss.
 
 - 0.5.8
 
