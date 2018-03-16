@@ -95,8 +95,10 @@ class SassProcessor(object):
         if self.node_npx_path and os.path.isdir(self.node_modules_dir or ''):
             os.environ['NODE_PATH'] = self.node_modules_dir
             try:
-                proc = subprocess.Popen([self.node_npx_path, 'postcss', '--use', 'autoprefixer', '--no-map'],
-                                        stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                options = [self.node_npx_path, 'postcss', '--use', 'autoprefixer']
+                if not settings.DEBUG:
+                    options.append('--no-map')
+                proc = subprocess.Popen(options, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
                 proc.stdin.write(content)
                 proc.stdin.close()
                 content = proc.stdout.read()

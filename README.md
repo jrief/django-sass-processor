@@ -9,7 +9,11 @@ third party services nor special IDE plugins.
 ### Other good reasons for using this library
 
 From now on, you refer SASS/SCSS files directly from your sources, instead of referring a compiled
-CSS file, hoping that some utility is creating it from a hidden SASS/SCSS file in your source tree.
+CSS file, hoping that some other utility will create it from a SASS/SCSS file, hidden somewhere in
+your source tree.
+
+Use Django's settings for the configuration of pathes, box sizes etc., instead of having another
+SCSS specific file (typically ``_variables.scss``), to hold these.
 
 
 [![Build Status](https://travis-ci.org/jrief/django-sass-processor.svg)](https://travis-ci.org/jrief/django-sass-processor)
