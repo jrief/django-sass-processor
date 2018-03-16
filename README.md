@@ -365,17 +365,29 @@ STATICFILES_DIRS = [
 NODE_MODULES_URL = STATIC_URL + 'node_modules/'
 ```
 
-With the SASS function `get-setting`, it now is possible to override any SASS variable with a
-value configured in the project's `settings.py`. For the Glyphicons font search path, add this
-to your `_variables.scss`:
+With the SASS function `get-setting`, it is possible to override any SASS variable with a value
+configured in the project's `settings.py`. For the Glyphicons font search path, add this to your
+`_variables.scss`:
 
-```
+```scss
 $icon-font-path: unquote(get-setting(NODE_MODULES_URL) + "bootstrap-sass/assets/fonts/bootstrap/");
 ```
 
 and `@import "variables";` whenever you need Glyphicons. You then can safely remove any font
 references, such as `<link href="/path/to/your/fonts/bootstrap/glyphicons-whatever.ttf" ...>`
 from you HTML templates.
+
+There is another set of SASS functions, named `python-call0`, `python-call1`, `python-call2` and
+`python-call3`. With these it is possible to call any Python function reachable in your
+project. The postfix digit specifies the number of passed in parameters. Example:
+
+```scss
+$color: python-call1('myproject.utils.get_alarm_color', $severity);
+```
+
+This will pass the content of the variable ``$severity`` into the function
+``def get_alarm_color(severity)`` in Python module ``myproject.utils``.
+
 
 ## Serving static files with S3
 

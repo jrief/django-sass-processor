@@ -13,7 +13,7 @@ from django.templatetags.static import PrefixNode
 from django.utils.encoding import force_bytes
 from django.utils import six
 from django.utils.six.moves.urllib.parse import quote, urljoin
-from sass_processor.utils import get_setting
+from sass_processor.utils import custom_functions
 
 from .storage import SassFileStorage, find_file
 from .apps import APPS_INCLUDE_DIRS
@@ -72,9 +72,6 @@ class SassProcessor(object):
         if sass is None:
             msg = "Offline compiled file `{}` is missing and libsass has not been installed."
             raise ImproperlyConfigured(msg.format(css_filename))
-
-        # add a function to be used from inside SASS
-        custom_functions = {'get-setting': get_setting}
 
         # otherwise compile the SASS/SCSS file into .css and store it
         sourcemap_url = self.storage.url(sourcemap_filename)
