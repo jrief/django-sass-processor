@@ -1,3 +1,5 @@
 .bluebox {
 	background-color: get-setting(SASS_BLUE_COLOR);
+	width: python-call0('tests.get_width');
+	border: python-call3('tests.permutate', 'solid', 'red', '1px');
 }

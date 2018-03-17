@@ -14,7 +14,7 @@ def get_setting(*args):
     try:
         return getattr(settings, args[0])
     except AttributeError as e:
-        raise TemplateSyntaxError(e.message)
+        raise TemplateSyntaxError(str(e))
 
 
 def python_call(*args):
@@ -22,7 +22,7 @@ def python_call(*args):
         func = import_string(args[0])
         result = func(*args[1:])
         if isinstance(result, (int, float, Decimal)):
-            return sass.SassNumber(result, type(result).__name__.encode())
+            return str(sass.SassNumber(result, type(result).__name__.encode()).value)
         return result
     except Exception as e:
         raise TemplateSyntaxError(str(e))
