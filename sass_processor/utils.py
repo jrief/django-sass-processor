@@ -34,7 +34,7 @@ def get_custom_functions():
             if not inspect.isfunction(func):
                 raise TemplateSyntaxError("{} is not a Python function".format(func))
             if six.PY2:
-                func_args = inspect.getargspec(func)
+                func_args = tuple(inspect.getargspec(func))
             else:
                 func_args = inspect.getfullargspec(func)
             sass_func = sass.SassFunction(name, func_args, func)
