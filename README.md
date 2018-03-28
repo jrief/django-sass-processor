@@ -15,6 +15,8 @@ your source tree.
 Use Django's settings for the configuration of pathes, box sizes etc., instead of having another
 SCSS specific file (typically ``_variables.scss``), to hold these.
 
+Extend your SASS functions by calling Python functions directly out of your Django project.
+
 
 [![Build Status](https://travis-ci.org/jrief/django-sass-processor.svg)](https://travis-ci.org/jrief/django-sass-processor)
 [![PyPI](https://img.shields.io/pypi/pyversions/django-sass-processor.svg)]()
