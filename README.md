@@ -428,6 +428,10 @@ tox
 
 ## Changelog
 
+- 0.7
+
+* Allow to call directly into Python functions.
+
 - 0.6
 
 * Add autoprefixing via external postcss.
