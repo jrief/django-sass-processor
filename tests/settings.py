@@ -80,7 +80,7 @@ STATICFILES_DIRS = [
 
 SASS_PROCESSOR_ENABLED = True
 
-SASS_PROCESSOR_FUNCTIONS = {
+SASS_PROCESSOR_CUSTOM_FUNCTIONS = {
     'get-width': 'tests.get_width',
     'get-margins': 'tests.get_margins',
     'get-plain-color': 'tests.get_plain_color',

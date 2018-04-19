@@ -24,7 +24,7 @@ def get_custom_functions():
     if hasattr(get_custom_functions, '_custom_functions'):
         return get_custom_functions._custom_functions
     get_custom_functions._custom_functions = {sass.SassFunction('get-setting', ('key',), get_setting)}
-    for name, func in getattr(settings, 'SASS_PROCESSOR_FUNCTIONS', {}).items():
+    for name, func in getattr(settings, 'SASS_PROCESSOR_CUSTOM_FUNCTIONS', {}).items():
         try:
             if isinstance(func, six.string_types):
                 func = import_string(func)
