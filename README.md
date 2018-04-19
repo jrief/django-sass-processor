@@ -380,13 +380,13 @@ references, such as `<link href="/path/to/your/fonts/bootstrap/glyphicons-whatev
 from you HTML templates.
 
 It is even possible to call Python functions from inside any module. Do this by adding
-`SASS_PROCESSOR_FUNCTIONS` to the project's `settings.py`. This shall contain a mapping
+`SASS_PROCESSOR_CUSTOM_FUNCTIONS` to the project's `settings.py`. This shall contain a mapping
 of SASS function names pointing to a Python function name.
 
 Example:
 
 ```python
-SASS_PROCESSOR_FUNCTIONS = {
+SASS_PROCESSOR_CUSTOM_FUNCTIONS = {
     'get-color': 'myproject.utils.get_color',
 }
 ```
