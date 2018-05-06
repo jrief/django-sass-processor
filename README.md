@@ -269,9 +269,11 @@ If everything is setup correctly, **django-sass-processor** adds all required ve
 the compiled CSS files. For further information, refer to the
 [Autoprefixer](https://github.com/postcss/autoprefixer) package.
 
-To disable autoprefixing, even though ``postcss`` and ``autoprefixer`` is installed in
-``node_modules``, just set ``NODE_NPX_PATH = None``.
+To disable autoprefixing, set ``NODE_NPX_PATH = None``.
 
+**Important note**: If ``npx`` is installed, but ``postcss`` and/or ``autoprefixer`` are missing
+in the local ``node_modules``, setting ``NODE_NPX_PATH`` to ``None``is manadatory, otherwise
+**django-sass-processor** does not know how to postprocess the generated CSS files.
 
 ## Offline compilation
 
