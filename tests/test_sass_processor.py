@@ -85,7 +85,7 @@ class SassProcessorTest(TestCase):
         self.assertTrue(os.path.exists(css_file))
         with open(css_file, 'r') as f:
             output = f.read()
-        expected = '.bluebox{background-color:#0000ff;width:5.0;border:1px solid red}\n\n/*# sourceMappingURL=../../../../../../../../../static/tests/css/bluebox.css.map */'
+        expected = '.bluebox{background-color:#0000ff;margin:10.0px 5.0px 20.0px 15.0px;color:#fa0a78}\n\n/*# sourceMappingURL=../../../../../../../../../static/tests/css/bluebox.css.map */'
         self.assertEqual(expected, output)
 
     def assert_management_command(self, **kwargs):

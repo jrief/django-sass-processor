@@ -13,7 +13,7 @@ from django.templatetags.static import PrefixNode
 from django.utils.encoding import force_bytes
 from django.utils import six
 from django.utils.six.moves.urllib.parse import quote, urljoin
-from sass_processor.utils import custom_functions
+from sass_processor.utils import get_custom_functions
 
 from .storage import SassFileStorage, find_file
 from .apps import APPS_INCLUDE_DIRS
@@ -79,7 +79,7 @@ class SassProcessor(object):
             'filename': filename,
             'source_map_filename': sourcemap_url,
             'include_paths': self.include_paths + APPS_INCLUDE_DIRS,
-            'custom_functions': custom_functions,
+            'custom_functions': get_custom_functions(),
         }
         if self.sass_precision:
             compile_kwargs['precision'] = self.sass_precision

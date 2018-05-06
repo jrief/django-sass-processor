@@ -29,6 +29,7 @@ CLASSIFIERS = [
     'Framework :: Django :: 1.9',
     'Framework :: Django :: 1.10',
     'Framework :: Django :: 1.11',
+    'Framework :: Django :: 2.0',
 ]
 
 setup(
@@ -40,6 +41,11 @@ setup(
     url='https://github.com/jrief/django-sass-processor',
     packages=find_packages(),
     install_requires=[],
+    extras_require={
+        'dev': [
+            'libsass>=0.13',
+        ],
+    },
     license='LICENSE-MIT',
     platforms=['OS Independent'],
     classifiers=CLASSIFIERS,

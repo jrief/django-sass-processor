@@ -15,6 +15,8 @@ your source tree.
 Use Django's settings for the configuration of pathes, box sizes etc., instead of having another
 SCSS specific file (typically ``_variables.scss``), to hold these.
 
+Extend your SASS functions by calling Python functions directly out of your Django project.
+
 
 [![Build Status](https://travis-ci.org/jrief/django-sass-processor.svg)](https://travis-ci.org/jrief/django-sass-processor)
 [![PyPI](https://img.shields.io/pypi/pyversions/django-sass-processor.svg)]()
@@ -379,16 +381,32 @@ and `@import "variables";` whenever you need Glyphicons. You then can safely rem
 references, such as `<link href="/path/to/your/fonts/bootstrap/glyphicons-whatever.ttf" ...>`
 from you HTML templates.
 
-There is another set of SASS functions, named `python-call0`, `python-call1`, `python-call2` and
-`python-call3`. With these it is possible to call any Python function reachable in your
-project. The postfix digit specifies the number of passed in parameters. Example:
+It is even possible to call Python functions from inside any module. Do this by adding
+`SASS_PROCESSOR_CUSTOM_FUNCTIONS` to the project's `settings.py`. This shall contain a mapping
+of SASS function names pointing to a Python function name.
 
-```scss
-$color: python-call1('myproject.utils.get_alarm_color', $severity);
+Example:
+
+```python
+SASS_PROCESSOR_CUSTOM_FUNCTIONS = {
+    'get-color': 'myproject.utils.get_color',
+}
 ```
 
-This will pass the content of the variable ``$severity`` into the function
-``def get_alarm_color(severity)`` in Python module ``myproject.utils``.
+```scss
+$color: get-color(250, 10, 120);
+```
+
+This will pass the parameters '250, 10, 120' into the function `def get_color(red, green, blue)`
+in Python module `myproject.utils`. Note that this function receives the values as `sass.Number`,
+hence extract values using `red.value`, etc.
+
+If one of these customoized functions returns a value, which is not a string, then convert it
+either to a Python string or to a value of type `sass.SassNumber`. For other types, refer to their
+documentation.
+
+Such customized functions must accept parameters explicilty, otherwise `sass_processor` does not
+know how to map them. Variable argument lists therefore can not be used.
 
 
 ## Serving static files with S3
@@ -411,6 +429,10 @@ tox
 ```
 
 ## Changelog
+
+- 0.7
+
+* Allow to call directly into Python functions.
 
 - 0.6
 
