@@ -6,14 +6,14 @@ Well, then this app is for you! Compile SASS/SCSS files on the fly without havin
 third party services nor special IDE plugins.
 
 
-### Other good reasons for using this library
+## Other good reasons for using this library
 
 From now on, you refer SASS/SCSS files directly from your sources, instead of referring a compiled
 CSS file, hoping that some other utility will create it from a SASS/SCSS file, hidden somewhere in
 your source tree.
 
-Use Django's settings for the configuration of pathes, box sizes etc., instead of having another
-SCSS specific file (typically ``_variables.scss``), to hold these.
+Use Django's `settings.py` for the configuration of pathes, box sizes etc., instead of having another
+SCSS specific file (typically `_variables.scss`), to hold these.
 
 Extend your SASS functions by calling Python functions directly out of your Django project.
 
