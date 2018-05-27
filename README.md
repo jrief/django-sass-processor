@@ -80,6 +80,17 @@ INSTALLED_APPS = [
 ]
 ```
 
+You'll also need to configure a static files finder. If there is no `STATICFILES_FINDERS` in your `settings.py`, don't forget to include [Django's default finders](https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-STATICFILES_FINDERS).
+
+```python
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'sass_processor.finders.CssFinder',
+    ...
+]
+```
+
 Optionally, add a list of additional search paths, the SASS compiler may examine when using the
 `@import "...";` statement in SASS/SCSS files:
 
@@ -121,24 +132,10 @@ Having a location outside of the working directory prevents to pollute your loca
 directories with auto-generated files. Therefore assure, that this directory is writable by the
 Django runserver.
 
-**django-sass-processor** is shipped with a special finder, to locate the generated `*.css` files
-in the directory referred by `SASS_PROCESSOR_ROOT` (or, if unset `STATIC_ROOT`). Just add it to
-your `settings.py`. If there is no `STATICFILES_FINDERS` in your `settings.py` don't forget
-to include the **Django** [default finders](https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-STATICFILES_FINDERS).
-
 If the directory referred by `SASS_PROCESSOR_ROOT` does not exist, then **django-sass-processor**
 creates it. This does does not apply, if `SASS_PROCESSOR_ROOT` is unset and hence defaults to
 `STATIC_ROOT`. Therefore it is a good idea to otherwise use `SASS_PROCESSOR_ROOT = STATIC_ROOT`
 in your `settings.py`.
-
-```python
-STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'sass_processor.finders.CssFinder',
-    ...
-]
-```
 
 #### Fine tune SASS compiler parameters in `settings.py`.
 
