@@ -80,18 +80,6 @@ INSTALLED_APPS = [
 ]
 ```
 
-Optionally, add a list of additional search paths, the SASS compiler may examine when using the
-`@import "...";` statement in SASS/SCSS files:
-
-```python
-import os
-
-SASS_PROCESSOR_INCLUDE_DIRS = [
-    os.path.join(PROJECT_PATH, 'extra-styles/scss'),
-    os.path.join(PROJECT_PATH, 'node_modules'),
-]
-```
-
 **django-sass-processor** is shipped with a special finder, to locate the generated `*.css` files
 in the directory referred by `SASS_PROCESSOR_ROOT` (or, if unset `STATIC_ROOT`). Just add it to
 your `settings.py`. If there is no `STATICFILES_FINDERS` in your `settings.py` don't forget
@@ -108,6 +96,18 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'sass_processor.finders.CssFinder',
     ...
+]
+```
+
+Optionally, add a list of additional search paths, the SASS compiler may examine when using the
+`@import "...";` statement in SASS/SCSS files:
+
+```python
+import os
+
+SASS_PROCESSOR_INCLUDE_DIRS = [
+    os.path.join(PROJECT_PATH, 'extra-styles/scss'),
+    os.path.join(PROJECT_PATH, 'node_modules'),
 ]
 ```
 
