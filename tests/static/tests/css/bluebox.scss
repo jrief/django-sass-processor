@@ -1,3 +1,5 @@
 .bluebox {
 	background-color: get-setting(SASS_BLUE_COLOR);
+	margin: get-margins(10, 5, 20, 15);
+	color: get-plain-color(250, 10, 120);
 }

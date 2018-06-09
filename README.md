@@ -6,14 +6,16 @@ Well, then this app is for you! Compile SASS/SCSS files on the fly without havin
 third party services nor special IDE plugins.
 
 
-### Other good reasons for using this library
+## Other good reasons for using this library
 
-Refer SASS/SCSS files directly from HTML and Python sources, instead of referring a compiled CSS
-file, knowing that some utility shall create that file from a SASS/SCSS, hidden somewhere in the
-project's source tree.
+From now on, you refer SASS/SCSS files directly from your sources, instead of referring a compiled
+CSS file, hoping that some other utility will create it from a SASS/SCSS file, hidden somewhere in
+your source tree.
 
-Use the Django ``settings.py``, rather than having separate configurations in a file such as
-``_variables.scss``.
+Use Django's `settings.py` for the configuration of pathes, box sizes etc., instead of having another
+SCSS specific file (typically `_variables.scss`), to hold these.
+
+Extend your SASS functions by calling Python functions directly out of your Django project.
 
 
 [![Build Status](https://travis-ci.org/jrief/django-sass-processor.svg)](https://travis-ci.org/jrief/django-sass-processor)
@@ -78,6 +80,25 @@ INSTALLED_APPS = [
 ]
 ```
 
+**django-sass-processor** is shipped with a special finder, to locate the generated `*.css` files
+in the directory referred by `SASS_PROCESSOR_ROOT` (or, if unset `STATIC_ROOT`). Just add it to
+your `settings.py`. If there is no `STATICFILES_FINDERS` in your `settings.py` don't forget
+to include the **Django** [default finders](https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-STATICFILES_FINDERS).
+
+If the directory referred by `SASS_PROCESSOR_ROOT` does not exist, then **django-sass-processor**
+creates it. This does does not apply, if `SASS_PROCESSOR_ROOT` is unset and hence defaults to
+`STATIC_ROOT`. Therefore it is a good idea to otherwise use `SASS_PROCESSOR_ROOT = STATIC_ROOT`
+in your `settings.py`.
+
+```python
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'sass_processor.finders.CssFinder',
+    ...
+]
+```
+
 Optionally, add a list of additional search paths, the SASS compiler may examine when using the
 `@import "...";` statement in SASS/SCSS files:
 
@@ -119,24 +140,6 @@ Having a location outside of the working directory prevents to pollute your loca
 directories with auto-generated files. Therefore assure, that this directory is writable by the
 Django runserver.
 
-**django-sass-processor** is shipped with a special finder, to locate the generated `*.css` files
-in the directory referred by `SASS_PROCESSOR_ROOT` (or, if unset `STATIC_ROOT`). Just add it to
-your `settings.py`. If there is no `STATICFILES_FINDERS` in your `settings.py` don't forget
-to include the **Django** [default finders](https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-STATICFILES_FINDERS).
-
-If the directory referred by `SASS_PROCESSOR_ROOT` does not exist, then **django-sass-processor**
-creates it. This does not apply, if `SASS_PROCESSOR_ROOT` is unset and hence defaults to
-`STATIC_ROOT`. Therefore it is a good idea to otherwise use `SASS_PROCESSOR_ROOT = STATIC_ROOT`
-in your `settings.py`.
-
-```python
-STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'sass_processor.finders.CssFinder',
-    ...
-]
-```
 
 #### Fine tune SASS compiler parameters in `settings.py`.
 
@@ -241,6 +244,40 @@ class SomeAdminOrFormClass(...):
         }
 ```
 
+## Add vendor prefixes to CSS rules using values from https://caniuse.com/
+
+Writing SCSS shall be fast and easy and you should not have to care, whether to add vendor specific
+prefixes to your CSS directives. Unfortunately there is no pure Python package to solve this, but
+with a few node modules, we can add this to our process chain.
+
+As superuser install
+
+```shell
+npm install -g npx
+```
+
+and inside your project root, install
+
+```shell
+npm install postcss-cli autoprefixer
+```
+
+Check that the path of ``node_modules`` corresponds to its entry in the settings directive
+``STATICFILES_DIRS`` (see below).
+
+In case ``npx`` can not be found in your system path, use the settings directive
+``NODE_NPX_PATH = /path/to/npx`` to point to that executable.
+
+If everything is setup correctly, **django-sass-processor** adds all required vendor prefixes to
+the compiled CSS files. For further information, refer to the
+[Autoprefixer](https://github.com/postcss/autoprefixer) package.
+
+To disable autoprefixing, set ``NODE_NPX_PATH = None``.
+
+**Important note**: If ``npx`` is installed, but ``postcss`` and/or ``autoprefixer`` are missing
+in the local ``node_modules``, setting ``NODE_NPX_PATH`` to ``None``is manadatory, otherwise
+**django-sass-processor** does not know how to postprocess the generated CSS files.
+
 ## Offline compilation
 
 If you want to precompile all occurrences of your SASS/SCSS files for the whole project, on the
@@ -333,17 +370,45 @@ STATICFILES_DIRS = [
 NODE_MODULES_URL = STATIC_URL + 'node_modules/'
 ```
 
-With the SASS function `get-setting`, it now is possible to override any SASS variable with a
-value configured in the project's `settings.py`. For the Glyphicons font search path, add this
-to your `_variables.scss`:
+With the SASS function `get-setting`, it is possible to override any SASS variable with a value
+configured in the project's `settings.py`. For the Glyphicons font search path, add this to your
+`_variables.scss`:
 
-```
+```scss
 $icon-font-path: unquote(get-setting(NODE_MODULES_URL) + "bootstrap-sass/assets/fonts/bootstrap/");
 ```
 
 and `@import "variables";` whenever you need Glyphicons. You then can safely remove any font
 references, such as `<link href="/path/to/your/fonts/bootstrap/glyphicons-whatever.ttf" ...>`
 from you HTML templates.
+
+It is even possible to call Python functions from inside any module. Do this by adding
+`SASS_PROCESSOR_CUSTOM_FUNCTIONS` to the project's `settings.py`. This shall contain a mapping
+of SASS function names pointing to a Python function name.
+
+Example:
+
+```python
+SASS_PROCESSOR_CUSTOM_FUNCTIONS = {
+    'get-color': 'myproject.utils.get_color',
+}
+```
+
+```scss
+$color: get-color(250, 10, 120);
+```
+
+This will pass the parameters '250, 10, 120' into the function `def get_color(red, green, blue)`
+in Python module `myproject.utils`. Note that this function receives the values as `sass.Number`,
+hence extract values using `red.value`, etc.
+
+If one of these customoized functions returns a value, which is not a string, then convert it
+either to a Python string or to a value of type `sass.SassNumber`. For other types, refer to their
+documentation.
+
+Such customized functions must accept parameters explicilty, otherwise `sass_processor` does not
+know how to map them. Variable argument lists therefore can not be used.
+
 
 ## Serving static files with S3
 
@@ -365,6 +430,14 @@ tox
 ```
 
 ## Changelog
+
+- 0.7
+
+* Allow to call directly into Python functions.
+
+- 0.6
+
+* Add autoprefixing via external postcss.
 
 - 0.5.8
 

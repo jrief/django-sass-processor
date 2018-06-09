@@ -39,12 +39,18 @@ setup(
     author='Jacob Rief',
     author_email='jacob.rief@gmail.com',
     url='https://github.com/jrief/django-sass-processor',
-    packages=find_packages(),
     install_requires=[],
-    license='LICENSE-MIT',
+    extras_require={
+        'dev': [
+            'libsass>=0.13',
+        ],
+    },
+    license='MIT',
+    keywords=['django', 'sass'],
     platforms=['OS Independent'],
     classifiers=CLASSIFIERS,
     long_description=convert('README.md', 'rst'),
     include_package_data=True,
+    packages=find_packages(exclude=['tests']),
     zip_safe=False,
 )
