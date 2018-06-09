@@ -8,8 +8,12 @@ third party services nor special IDE plugins.
 
 ### Other good reasons for using this library
 
-From now on, you refer SASS/SCSS files directly from your sources, instead of referring a compiled
-CSS file, hoping that some utility is creating it from a hidden SASS/SCSS file in your source tree.
+Refer SASS/SCSS files directly from HTML and Python sources, instead of referring a compiled CSS
+file, knowing that some utility shall create that file from a SASS/SCSS, hidden somewhere in the
+project's source tree.
+
+Use the Django ``settings.py``, rather than having separate configurations in a file such as
+``_variables.scss``.
 
 
 [![Build Status](https://travis-ci.org/jrief/django-sass-processor.svg)](https://travis-ci.org/jrief/django-sass-processor)
@@ -121,7 +125,7 @@ your `settings.py`. If there is no `STATICFILES_FINDERS` in your `settings.py` d
 to include the **Django** [default finders](https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-STATICFILES_FINDERS).
 
 If the directory referred by `SASS_PROCESSOR_ROOT` does not exist, then **django-sass-processor**
-creates it. This does does not apply, if `SASS_PROCESSOR_ROOT` is unset and hence defaults to
+creates it. This does not apply, if `SASS_PROCESSOR_ROOT` is unset and hence defaults to
 `STATIC_ROOT`. Therefore it is a good idea to otherwise use `SASS_PROCESSOR_ROOT = STATIC_ROOT`
 in your `settings.py`.
 
