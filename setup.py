@@ -2,16 +2,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import io
 from setuptools import setup, find_packages
 from sass_processor import __version__
-try:
-    from pypandoc import convert
-except ImportError:
-    import io
 
-    def convert(filename, fmt):
-        with io.open(filename, encoding='utf-8') as fd:
-            return fd.read()
+def readfile(filename):
+    with io.open(filename, encoding='utf-8') as fd:
+        return fd.read()
 
 CLASSIFIERS = [
     'Development Status :: 5 - Production/Stable',
@@ -49,7 +46,8 @@ setup(
     keywords=['django', 'sass'],
     platforms=['OS Independent'],
     classifiers=CLASSIFIERS,
-    long_description=convert('README.md', 'rst'),
+    long_description=readfile('README.md'),
+    long_description_content_type='text/markdown',
     include_package_data=True,
     packages=find_packages(exclude=['tests']),
     zip_safe=False,
