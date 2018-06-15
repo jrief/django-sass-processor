@@ -39,7 +39,7 @@ class SassProcessorTest(TestCase):
         self.assertTrue(os.path.exists(css_file))
         with open(css_file, 'r') as f:
             output = f.read()
-        expected = "#main p{color:#00ff00;width:97%}#main p .redbox{background-color:#ff0000}#main p .redbox:hover{color:#000000}\n\n/*# sourceMappingURL=../../../../../../../../../static/tests/css/main.css.map */"
+        expected = "#main p{color:#00ff00;width:97%}#main p .redbox{background-color:#ff0000}#main p .redbox:hover{color:#000000}\n\n/*# sourceMappingURL=main.css.map */"
         self.assertEqual(expected, output)
 
         # check if compilation is skipped file for a second invocation of `sass_src`
@@ -85,7 +85,7 @@ class SassProcessorTest(TestCase):
         self.assertTrue(os.path.exists(css_file))
         with open(css_file, 'r') as f:
             output = f.read()
-        expected = '.bluebox{background-color:#0000ff;margin:10.0px 5.0px 20.0px 15.0px;color:#fa0a78}\n\n/*# sourceMappingURL=../../../../../../../../../static/tests/css/bluebox.css.map */'
+        expected = '.bluebox{background-color:#0000ff;margin:10.0px 5.0px 20.0px 15.0px;color:#fa0a78}\n\n/*# sourceMappingURL=bluebox.css.map */'
         self.assertEqual(expected, output)
 
     def assert_management_command(self, **kwargs):

@@ -65,7 +65,7 @@ class SassProcessor(object):
         if not self.processor_enabled:
             return css_filename
         sourcemap_filename = css_filename + '.map'
-        if find_file(css_filename) and self.is_latest(sourcemap_filename):
+        if find_file(css_filename) and self.is_latest(sourcemap_filename, filename):
             return css_filename
 
         # with offline compilation, raise an error, if css file could not be found.
@@ -74,10 +74,10 @@ class SassProcessor(object):
             raise ImproperlyConfigured(msg.format(css_filename))
 
         # otherwise compile the SASS/SCSS file into .css and store it
-        sourcemap_url = self.storage.url(sourcemap_filename)
+        filename_map = filename.replace(ext, '.css.map')
         compile_kwargs = {
             'filename': filename,
-            'source_map_filename': sourcemap_url,
+            'source_map_filename': filename_map,
             'include_paths': self.include_paths + APPS_INCLUDE_DIRS,
             'custom_functions': get_custom_functions(),
         }
@@ -120,7 +120,7 @@ class SassProcessor(object):
         _, ext = os.path.splitext(self.resolve_path())
         return ext in self.sass_extensions
 
-    def is_latest(self, sourcemap_filename):
+    def is_latest(self, sourcemap_filename, filename):
         sourcemap_file = find_file(sourcemap_filename)
         if not sourcemap_file or not os.path.isfile(sourcemap_file):
             return False
@@ -128,8 +128,7 @@ class SassProcessor(object):
         with open(sourcemap_file, 'r') as fp:
             sourcemap = json.load(fp)
         for srcfilename in sourcemap.get('sources'):
-            components = os.path.normpath(srcfilename).split('/')
-            srcfilename = ''.join([os.path.sep + c for c in components if c != os.path.pardir])
+            srcfilename = os.path.join(os.path.dirname(filename), srcfilename)
             if not os.path.isfile(srcfilename) or os.stat(srcfilename).st_mtime > sourcemap_mtime:
                 # at least one of the source is younger that the sourcemap referring it
                 return False
