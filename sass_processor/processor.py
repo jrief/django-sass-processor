@@ -65,7 +65,8 @@ class SassProcessor(object):
         if not self.processor_enabled:
             return css_filename
         sourcemap_filename = css_filename + '.map'
-        if find_file(css_filename) and self.is_latest(sourcemap_filename, filename):
+        base = os.path.dirname(filename)
+        if find_file(css_filename) and self.is_latest(sourcemap_filename, base):
             return css_filename
 
         # with offline compilation, raise an error, if css file could not be found.
@@ -120,7 +121,7 @@ class SassProcessor(object):
         _, ext = os.path.splitext(self.resolve_path())
         return ext in self.sass_extensions
 
-    def is_latest(self, sourcemap_filename, filename):
+    def is_latest(self, sourcemap_filename, base):
         sourcemap_file = find_file(sourcemap_filename)
         if not sourcemap_file or not os.path.isfile(sourcemap_file):
             return False
@@ -128,7 +129,7 @@ class SassProcessor(object):
         with open(sourcemap_file, 'r') as fp:
             sourcemap = json.load(fp)
         for srcfilename in sourcemap.get('sources'):
-            srcfilename = os.path.join(os.path.dirname(filename), srcfilename)
+            srcfilename = os.path.join(base, srcfilename)
             if not os.path.isfile(srcfilename) or os.stat(srcfilename).st_mtime > sourcemap_mtime:
                 # at least one of the source is younger that the sourcemap referring it
                 return False
