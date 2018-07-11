@@ -5,6 +5,7 @@ import os
 
 import ast
 import sass
+import subprocess
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
 from django.apps import apps
 from django.conf import settings
@@ -14,6 +15,7 @@ from django.template import engines
 from django.template.base import Origin
 from django.template.loader import \
     get_template  # in order to preload template locations
+from django.utils import six
 from django.utils.encoding import force_bytes
 from django.utils.translation import gettext_lazy as _
 from importlib import import_module
@@ -22,6 +24,11 @@ from sass_processor.processor import SassProcessor
 from sass_processor.storage import SassFileStorage, find_file
 from sass_processor.templatetags.sass_tags import SassSrcNode
 from sass_processor.utils import get_custom_functions
+
+if six.PY2:
+    import socket
+    BrokenPipeError = socket.error
+    FileNotFoundError = IOError
 
 __all__ = ['get_template', 'Command']
 
@@ -53,6 +60,11 @@ class Command(BaseCommand):
                                          'nested' if settings.DEBUG else 'compressed')
         self.use_static_root = False
         self.static_root = ''
+        
+        self.node_npx_path = getattr(settings, 'NODE_NPX_PATH', 'npx')
+        nmd = [d[1] for d in getattr(settings, 'STATICFILES_DIRS', [])
+               if isinstance(d, (list, tuple)) and d[0] == 'node_modules']
+        self.node_modules_dir = nmd[0] if len(nmd) else None
         super(Command, self).__init__()
 
     def add_arguments(self, parser):
@@ -284,6 +296,22 @@ class Command(BaseCommand):
         if self.sass_output_style:
             compile_kwargs['output_style'] = self.sass_output_style
         content = sass.compile(**compile_kwargs)
+        
+        # autoprefix CSS files using postcss in external JavaScript process
+        if self.node_npx_path and os.path.isdir(self.node_modules_dir or ''):
+            os.environ['NODE_PATH'] = self.node_modules_dir
+            try:
+                options = [node_npx_path, 'postcss', '--use', 'autoprefixer']
+                if not settings.DEBUG:
+                    options.append('--no-map')
+                proc = subprocess.Popen(options, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                proc.stdin.write(force_bytes(content))
+                proc.stdin.close()
+                content = proc.stdout.read()
+                proc.wait()
+            except (FileNotFoundError, BrokenPipeError):
+                pass
+            
         self.save_to_destination(content, sass_filename, sass_fileurl)
         self.processed_files.append(sass_filename)
         if self.verbosity > 1:
