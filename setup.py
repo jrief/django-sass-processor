@@ -2,13 +2,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import io
 from setuptools import setup, find_packages
 from sass_processor import __version__
 
-def readfile(filename):
-    with io.open(filename, encoding='utf-8') as fd:
-        return fd.read()
+with open('README.md', 'r') as fh:
+    long_description = fh.read()
 
 CLASSIFIERS = [
     'Development Status :: 5 - Production/Stable',
@@ -46,7 +44,7 @@ setup(
     keywords=['django', 'sass'],
     platforms=['OS Independent'],
     classifiers=CLASSIFIERS,
-    long_description=readfile('README.md'),
+    long_description=long_description,
     long_description_content_type='text/markdown',
     include_package_data=True,
     packages=find_packages(exclude=['tests']),

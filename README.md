@@ -262,20 +262,20 @@ and inside your project root, install
 npm install postcss-cli autoprefixer
 ```
 
-Check that the path of ``node_modules`` corresponds to its entry in the settings directive
-``STATICFILES_DIRS`` (see below).
+Check that the path of `node_modules` corresponds to its entry in the settings directive
+`STATICFILES_DIRS` (see below).
 
-In case ``npx`` can not be found in your system path, use the settings directive
-``NODE_NPX_PATH = /path/to/npx`` to point to that executable.
+In case `npx` can not be found in your system path, use the settings directive
+`NODE_NPX_PATH = /path/to/npx` to point to that executable.
 
 If everything is setup correctly, **django-sass-processor** adds all required vendor prefixes to
 the compiled CSS files. For further information, refer to the
 [Autoprefixer](https://github.com/postcss/autoprefixer) package.
 
-To disable autoprefixing, set ``NODE_NPX_PATH = None``.
+To disable autoprefixing, set `NODE_NPX_PATH = None`.
 
-**Important note**: If ``npx`` is installed, but ``postcss`` and/or ``autoprefixer`` are missing
-in the local ``node_modules``, setting ``NODE_NPX_PATH`` to ``None``is manadatory, otherwise
+**Important note**: If `npx` is installed, but `postcss` and/or `autoprefixer` are missing
+in the local `node_modules`, setting `NODE_NPX_PATH` to `None` is manadatory, otherwise
 **django-sass-processor** does not know how to postprocess the generated CSS files.
 
 ## Offline compilation
