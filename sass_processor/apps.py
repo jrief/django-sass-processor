@@ -6,7 +6,6 @@ import os
 from django.apps import apps, AppConfig
 from django.conf import settings
 from django.contrib.staticfiles.finders import AppDirectoriesFinder
-from django.core.files.storage import get_storage_class
 
 
 APPS_INCLUDE_DIRS = []
@@ -14,7 +13,6 @@ APPS_INCLUDE_DIRS = []
 class SassProcessorConfig(AppConfig):
     name = 'sass_processor'
     verbose_name = "Sass Processor"
-    _storage = get_storage_class(import_path=settings.STATICFILES_STORAGE)()
     _auto_include = getattr(settings, 'SASS_PROCESSOR_AUTO_INCLUDE', True)
     _pattern = re.compile(getattr(settings, 'SASS_PROCESSOR_INCLUDE_FILE_PATTERN', r'^_.+\.(scss|sass)$'))
 
