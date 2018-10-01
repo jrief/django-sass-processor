@@ -99,6 +99,19 @@ STATICFILES_FINDERS = [
 ]
 ```
 
+During development, in order to have the generated `*.css` files served by the developement server, define a root directory for your `*.css` files with the `SASS_PROCESSOR_ROOT` variable, and add this directory to your `STATICFILES_DIRS`. For instance:
+
+```python
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+SASS_PROCESSOR_ROOT = os.path.join(BASE_DIR, 'your_css_dir')
+STATICFILES_DIRS = [
+    ...
+    SASS_PROCESSOR_ROOT,
+]
+```
+
 Optionally, add a list of additional search paths, the SASS compiler may examine when using the
 `@import "...";` statement in SASS/SCSS files:
 
