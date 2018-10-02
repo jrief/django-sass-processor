@@ -72,9 +72,9 @@ In `settings.py` add to:
 
 ```python
 INSTALLED_APPS = [
-    ...
+    …
     'sass_processor',
-    ...
+    …
 ]
 ```
 
@@ -93,12 +93,12 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'sass_processor.finders.CssFinder',
-    ...
+    …
 ]
 ```
 
 Optionally, add a list of additional search paths, the SASS compiler may examine when using the
-`@import "...";` statement in SASS/SCSS files:
+`@import "…";` statement in SASS/SCSS files:
 
 ```python
 import os
@@ -130,11 +130,11 @@ SASS_PROCESSOR_INCLUDE_FILE_PATTERN = r'^.+\.scss$'
 will look for all files of type `scss`. Remember that SASS/SCSS files which start with an
 underscore, are intended to be imported by other SASS/SCSS files, while files starting with a
 letter or number are intended to be included by the HTML tag
-`<link href="{% sass_src 'path/to/file.scss' %}" ...>`.
+`<link href="{% sass_src 'path/to/file.scss' %}" …>`.
 
 During development, or when `SASS_PROCESSOR_ENABLED = True`, the compiled file is placed into the
 folder referenced by `SASS_PROCESSOR_ROOT` (if unset, this setting defaults to `STATIC_ROOT`).
-Having a location outside of the working directory prevents to pollute your local `static/css/...`
+Having a location outside of the working directory prevents to pollute your local `static/css/…`
 directories with auto-generated files. Therefore assure, that this directory is writable by the
 Django runserver.
 
@@ -176,7 +176,7 @@ TEMPLATES = [{
     'OPTIONS': {
         'environment': 'yourapp.jinja2.environment'
     },
-    ...
+    …
 }]
 ```
 
@@ -235,10 +235,10 @@ in Django's admin or form framework.
 ```python
 from sass_processor.processor import sass_processor
 
-class SomeAdminOrFormClass(...):
-    ...
+class SomeAdminOrFormClass(…):
+    …
     class Media:
-         css = {
+        css = {
             'all': [sass_processor('myapp/css/mystyle.scss')],
         }
 ```
@@ -361,9 +361,9 @@ accessible through the Django's `django.contrib.staticfiles.finders.FileSystemFi
 
 ```python
 STATICFILES_DIRS = [
-    ...
+    …
     ('node_modules', '/path/to/your/project/node_modules/'),
-    ...
+    …
 ]
 
 NODE_MODULES_URL = STATIC_URL + 'node_modules/'
