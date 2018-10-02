@@ -226,7 +226,8 @@ The above template code will be rendered as HTML
 <link href="/static/myapp/css/mystyle.css" rel="stylesheet" type="text/css" />
 ```
 
-You can safely use this templatetag inside a Sekizai's `{% addtoblock "css" %}` statement.
+You can safely use this templatetag inside a [Sekizai](https://django-sekizai.readthedocs.io/)'s
+`{% addtoblock "css" %}` statement.
 
 ### In Media classes or properties
 
