@@ -381,6 +381,9 @@ and `@import "variables";` whenever you need Glyphicons. You then can safely rem
 references, such as `<link href="/path/to/your/fonts/bootstrap/glyphicons-whatever.ttf" ...>`
 from you HTML templates.
 
+
+### Configure SASS variables through Python functions
+
 It is even possible to call Python functions from inside any module. Do this by adding
 `SASS_PROCESSOR_CUSTOM_FUNCTIONS` to the project's `settings.py`. This shall contain a mapping
 of SASS function names pointing to a Python function name.
@@ -393,11 +396,13 @@ SASS_PROCESSOR_CUSTOM_FUNCTIONS = {
 }
 ```
 
+This allows to invoke Python functions out of any `*.scss` file. 
+
 ```scss
 $color: get-color(250, 10, 120);
 ```
 
-This will pass the parameters '250, 10, 120' into the function `def get_color(red, green, blue)`
+Here we pass the parameters '250, 10, 120' into the function `def get_color(red, green, blue)`
 in Python module `myproject.utils`. Note that this function receives the values as `sass.Number`,
 hence extract values using `red.value`, etc.
 
