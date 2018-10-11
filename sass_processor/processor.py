@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import os
 import json
+import logging
 import subprocess
 from django.apps import apps
 from django.conf import settings
@@ -27,6 +28,8 @@ if six.PY2:
     import socket
     BrokenPipeError = socket.error
     FileNotFoundError = IOError
+
+logger = logging.getLogger('sass-processor')
 
 
 class SassProcessor(object):
@@ -99,10 +102,13 @@ class SassProcessor(object):
                 proc = subprocess.Popen(options, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
                 proc.stdin.write(content)
                 proc.stdin.close()
-                content = proc.stdout.read()
+                autoprefixed_content = proc.stdout.read()
                 proc.wait()
-            except (FileNotFoundError, BrokenPipeError):
-                pass
+            except (FileNotFoundError, BrokenPipeError) as exc:
+                logger.warning("Unable to postcss {}. Reason: {}".format(filename, exc))
+            else:
+                if len(autoprefixed_content) >= len(content):
+                    content = autoprefixed_content
 
         if self.storage.exists(css_filename):
             self.storage.delete(css_filename)
