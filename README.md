@@ -435,6 +435,10 @@ tox
 
 ## Changelog
 
+- 0.7.2
+* Prevent empty content when using autoprefixer.
+
+* Source Map is now using relative paths. This fixes the path naming problems on Windows platforms.
 - 0.7.1
 
 * Source Map is now using relative paths. This fixes the path naming problems on Windows platforms.
