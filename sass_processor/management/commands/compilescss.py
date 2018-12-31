@@ -78,7 +78,6 @@ class Command(BaseCommand):
             help=_("Set templating engine used (django, jinja2). Default: django.")
         )
         parser.add_argument(
-            action='store_true',
             '--sass-precision',
             dest='sass_precision',
             type=int,
