@@ -79,10 +79,17 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             '--sass-precision',
+            action='store_true',
             dest='sass_precision',
             type=int,
             help=_(
                 "Set the precision for numeric computations in the SASS processor. Default: settings.SASS_PRECISION.")
+        )
+        parser.add_argument(
+            '--scan-py',
+            dest='include_py',
+            default=True,
+            help=_("Scan python files?")
         )
 
     def get_loaders(self):
@@ -148,6 +155,7 @@ class Command(BaseCommand):
 
             self.processed_files = []
 
+            if options['include_py']:
             # find all Python files making up this project; They might invoke `sass_processor`
             for py_source in self.find_sources():
                 if self.verbosity > 1:
