@@ -3,3 +3,4 @@ include README.md
 recursive-exclude *.pyc
 recursive-include sass_processor *.py
 recursive-exclude tests *
+recursive-exclude .*
