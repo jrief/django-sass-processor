@@ -128,7 +128,6 @@ class Command(BaseCommand):
                     engine=engine
                 )
             )
-
         return parser
 
     def handle(self, *args, **options):
@@ -138,7 +137,7 @@ class Command(BaseCommand):
         if self.use_static_root:
             self.static_root = getattr(settings, 'SASS_PROCESSOR_ROOT', settings.STATIC_ROOT)
 
-        engines = [e.strip() for e in options.get("engines", [])] or ["django"]
+        engines = [e.strip() for e in options.get('engines', [])] or ['django']
         for engine in engines:
             self.parser = self.get_parser(engine)
             try:
@@ -160,7 +159,6 @@ class Command(BaseCommand):
                     self.stderr.write("Syntax error encountered processing %s" % py_source)
                     self.stderr.write("Aborting compilation")
                     raise
-                    
 
             # find all Django/Jinja2 templates making up this project; They might invoke `sass_src`
             templates = self.find_templates()
