@@ -155,7 +155,7 @@ class Command(BaseCommand):
                     self.stdout.write(".", ending="")
                 try:
                     self.parse_source(py_source)
-                except SyntaxError as e:
+                except (SyntaxError, IndentationError) as e:
                     self.stderr.write("Syntax error encountered processing %s" % py_source)
                     self.stderr.write("Aborting compilation")
                     raise
