@@ -435,6 +435,9 @@ tox
 
 ## Changelog
 
+- 0.7.3
+* In managment command `compilescss`, also catch `IndentionError` of parsed files.
+
 - 0.7.2
 * Prevent empty content when using autoprefixer.
 
