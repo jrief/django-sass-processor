@@ -23,7 +23,7 @@ class CssFinder(FileSystemFinder):
             try:
                 location = getattr(settings, 'SASS_PROCESSOR_ROOT')
                 os.makedirs(location)
-            except AttributeError:
+            except (AttributeError, OSError):
                 return
         self.locations = [
             ('', location),
