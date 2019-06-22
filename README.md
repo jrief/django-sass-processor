@@ -422,6 +422,11 @@ STATICFILES_STORAGE = 'sass_processor.storage.SassS3Boto3Storage'
 ```
 
 
+## Heroku
+
+If you are deploying to [Heroku](https://www.heroku.com/), use the [heroku-buildpack-django-sass](https://elements.heroku.com/buildpacks/drpancake/heroku-buildpack-django-sass) buildpack to automatically compile scss for you.
+
+
 ## Development
 
 To run the tests locally, clone the repository, create a new virtualenv, activate it and then run
