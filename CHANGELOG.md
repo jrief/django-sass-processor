@@ -1,5 +1,9 @@
 # Changes for django-sass-processor
 
+- 0.7.4
+* Prevent the warnings about `Found another file with the destination path ...`, while
+  running `./manage.py collectstatic`.
+
 - 0.7.3
 * In managment command `compilescss`, also catch `IndentionError` of parsed files.
 
