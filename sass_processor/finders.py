@@ -37,3 +37,13 @@ class CssFinder(FileSystemFinder):
         if path.endswith('.css') or path.endswith('.css.map'):
             return super(CssFinder, self).find(path, all)
         return []
+
+    def list(self, ignore_patterns):
+        """
+        Do not list the contents of the configured storages, since this has already been done by
+        the other finder of type FileSystemFinder.
+        This prevents the warning ``Found another file with the destination path ...``, while
+        issuing ``./manage.py collectstatic``.
+        """
+        if False:
+            yield
