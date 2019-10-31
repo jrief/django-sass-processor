@@ -412,7 +412,43 @@ documentation.
 
 Such customized functions must accept parameters explicilty, otherwise `sass_processor` does not
 know how to map them. Variable argument lists therefore can not be used.
+Starting from the fact that libsass can not use the custom_functions in a list scss natively. An action has been implemented to overcome this and concerns only the source sass_src file.
 
+The conditions are as follows:
++ the name of the function must have "docfunclist" in its name (do custom_function list)
++ must not have args in parameter.
+
+Its operation is as follows:
+```
+{% addtoblock "css" %}<link rel="stylesheet" href="{% sass_src 'bs4demo/css/main.scss' %}" type="text/css" />{% endaddtoblock %}
+```
+From the main.scss files, a main__replace_sass_cfunc_list.scss file is created which has hard values in the files.
+Then, to check if main.scss has been modified, the file css.map is scrapper to restore its source origin.
+
+Example: 
+settings.py
+```
+SASS_PROCESSOR_CUSTOM_FUNCTIONS = {
+    'get-color-primary-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_primary',
+    'get-color-secondary-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_secondary',
+    'get-color-success-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_success',
+    'get-color-warning-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_warning',
+    'get-color-danger-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_danger',
+    'get-color-info-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_info',
+    'get-color-light-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_light',
+    'get-color-dark-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_dark',
+}
+```
+
+main.scss:
+```
+@import "variables";
+$theme-colors: (
+ primary: get-color-primary()
+);
+@import "bootstrap/scss/bootstrap";
+@import "footer";
+```
 
 ## Serving static files with S3
 
