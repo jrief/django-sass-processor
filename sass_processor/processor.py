@@ -79,8 +79,28 @@ class SassProcessor(object):
 
         # otherwise compile the SASS/SCSS file into .css and store it
         filename_map = filename.replace(ext, '.css.map')
+
+        # 1 fake custom_function in list for only master source scss
+        custom_function_docfunclist = {}
+        for custom_function in get_custom_functions() :
+            #check if tuple index out of range
+            if 'docfunclist' in custom_function.name: 
+                custom_function_docfunclist.update({ custom_function.name :custom_function() })
+        filename_scss = filename.replace(ext, '__replace_sass_cfunc_list.scss')
+        with open(filename, "rt") as fin:
+            with open(filename_scss , "wt") as fout:
+                for line in fin:
+                    linem = None
+                    for key , value in custom_function_docfunclist.items():
+                        if key in line: 
+                            linem = line.replace('{}{}'.format(key, '()'), value)
+                    if linem:
+                        fout.write(linem)
+                    else:
+                        fout.write(line)
+
         compile_kwargs = {
-            'filename': filename,
+            'filename': filename_scss,
             'source_map_filename': filename_map,
             'include_paths': self.include_paths + APPS_INCLUDE_DIRS,
             'custom_functions': get_custom_functions(),
@@ -89,6 +109,7 @@ class SassProcessor(object):
             compile_kwargs['precision'] = self.sass_precision
         if self.sass_output_style:
             compile_kwargs['output_style'] = self.sass_output_style
+
         content, sourcemap = sass.compile(**compile_kwargs)
         content, sourcemap = force_bytes(content), force_bytes(sourcemap)
 
@@ -131,10 +152,15 @@ class SassProcessor(object):
         sourcemap_file = find_file(sourcemap_filename)
         if not sourcemap_file or not os.path.isfile(sourcemap_file):
             return False
+
         sourcemap_mtime = os.stat(sourcemap_file).st_mtime
+        
         with open(sourcemap_file, 'r') as fp:
             sourcemap = json.load(fp)
         for srcfilename in sourcemap.get('sources'):
+            # 2 fake custom_function in list  for master source scss
+            srcfilename = srcfilename.replace('__replace_sass_cfunc_list', '')
+
             srcfilename = os.path.join(base, srcfilename)
             if not os.path.isfile(srcfilename) or os.stat(srcfilename).st_mtime > sourcemap_mtime:
                 # at least one of the source is younger that the sourcemap referring it
