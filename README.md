@@ -429,14 +429,14 @@ Example:
 settings.py
 ```
 SASS_PROCESSOR_CUSTOM_FUNCTIONS = {
-    'get-color-primary-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_primary',
-    'get-color-secondary-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_secondary',
-    'get-color-success-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_success',
-    'get-color-warning-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_warning',
-    'get-color-danger-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_danger',
-    'get-color-info-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_info',
-    'get-color-light-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_light',
-    'get-color-dark-docfunclist': 'cmsplugin_cascade.cascade_theme.utils.get_color_dark',
+    'get-color-primary-docfunclist': 'cmsplugin_cascade.theme.utils.get_color_primary',
+    'get-color-secondary-docfunclist': 'cmsplugin_cascade.theme.utils.get_color_secondary',
+    'get-color-success-docfunclist': 'cmsplugin_cascade.theme.utils.get_color_success',
+    'get-color-warning-docfunclist': 'cmsplugin_cascade.theme.utils.get_color_warning',
+    'get-color-danger-docfunclist': 'cmsplugin_cascade.theme.utils.get_color_danger',
+    'get-color-info-docfunclist': 'cmsplugin_cascade.theme.utils.get_color_info',
+    'get-color-light-docfunclist': 'cmsplugin_cascade.theme.utils.get_color_light',
+    'get-color-dark-docfunclist': 'cmsplugin_cascade.theme.utils.get_color_dark',
 }
 ```
 
