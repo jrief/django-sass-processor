@@ -444,7 +444,7 @@ main.scss:
 ```
 @import "variables";
 $theme-colors: (
- primary: get-color-primary()
+ primary: get-color-primary-docfunclist()
 );
 @import "bootstrap/scss/bootstrap";
 @import "footer";
