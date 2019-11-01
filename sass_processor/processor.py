@@ -81,17 +81,17 @@ class SassProcessor(object):
         filename_map = filename.replace(ext, '.css.map')
 
         # 1 fake custom_function in list for only master source scss
-        custom_function_docfunclist = {}
+        custom_function_sass_processor_prepass = {}
         for custom_function in get_custom_functions() :
             #check if tuple index out of range
-            if 'docfunclist' in custom_function.name: 
-                custom_function_docfunclist.update({ custom_function.name :custom_function() })
-        filename_scss = filename.replace(ext, '__replace_sass_cfunc_list.scss')
+            if 'sass_processor_prepass' in custom_function.name: 
+                custom_function_sass_processor_prepass.update({ custom_function.name :custom_function() })
+        filename_scss = filename.replace(ext, '__sass_processor_prepass.scss')
         with open(filename, "rt") as fin:
             with open(filename_scss , "wt") as fout:
                 for line in fin:
                     linem = None
-                    for key , value in custom_function_docfunclist.items():
+                    for key , value in custom_function_sass_processor_prepass.items():
                         if key in line: 
                             linem = line.replace('{}{}'.format(key, '()'), value)
                     if linem:
@@ -159,7 +159,7 @@ class SassProcessor(object):
             sourcemap = json.load(fp)
         for srcfilename in sourcemap.get('sources'):
             # 2 fake custom_function in list  for master source scss
-            srcfilename = srcfilename.replace('__replace_sass_cfunc_list', '')
+            srcfilename = srcfilename.replace('__sass_processor_prepass', '')
 
             srcfilename = os.path.join(base, srcfilename)
             if not os.path.isfile(srcfilename) or os.stat(srcfilename).st_mtime > sourcemap_mtime:
