@@ -12,6 +12,9 @@ third party services nor special IDE plugins.
 [![Downloads](https://img.shields.io/pypi/dm/django-sass-processor.svg)](https://pypi.python.org/pypi/django-sass-processor)
 [![Twitter Follow](https://img.shields.io/twitter/follow/shields_io.svg?style=social&label=Follow&maxAge=2592000)](https://twitter.com/jacobrief)
 
+**Version 0.7.5 will be the latest version to support Python-2.7** 
+
+
 ## Other good reasons for using this library
 
 * Refer SASS/SCSS files directly from your sources, instead of referring a compiled CSS file,
