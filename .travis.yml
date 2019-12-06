@@ -15,6 +15,11 @@ env:
   - DJANGOVER=django22
   - DJANGOVER=django30
 
+matrix:
+  exclude:
+    - python: 3.5
+      env: DJANGOVER=django30
+
 install:
   - pip install tox
 
