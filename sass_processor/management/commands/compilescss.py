@@ -52,7 +52,7 @@ class Command(BaseCommand):
                                          'nested' if settings.DEBUG else 'compressed')
         self.use_static_root = False
         self.static_root = ''
-        super(Command, self).__init__()
+        super().__init__()
 
     def add_arguments(self, parser):
         parser.add_argument(

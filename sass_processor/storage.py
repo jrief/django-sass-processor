@@ -10,7 +10,7 @@ class SassFileStorage(FileSystemStorage):
             location = getattr(settings, 'SASS_PROCESSOR_ROOT', settings.STATIC_ROOT)
         if base_url is None:
             base_url = settings.STATIC_URL
-        super(SassFileStorage, self).__init__(location, base_url, *args, **kwargs)
+        super().__init__(location, base_url, *args, **kwargs)
 
 try:
     from storages.backends.s3boto3 import S3Boto3Storage
