@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
+from urllib.parse import quote, urljoin
 import os
 import json
 import logging
 import subprocess
+
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -12,8 +11,6 @@ from django.core.files.base import ContentFile
 from django.template import Context
 from django.templatetags.static import PrefixNode
 from django.utils.encoding import force_bytes
-from django.utils import six
-from django.utils.six.moves.urllib.parse import quote, urljoin
 from sass_processor.utils import get_custom_functions
 
 from .storage import SassFileStorage, find_file
@@ -24,15 +21,10 @@ try:
 except ImportError:
     sass = None
 
-if six.PY2:
-    import socket
-    BrokenPipeError = socket.error
-    FileNotFoundError = IOError
-
 logger = logging.getLogger('sass-processor')
 
 
-class SassProcessor(object):
+class SassProcessor:
     storage = SassFileStorage()
     include_paths = list(getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', []))
     try:
