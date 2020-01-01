@@ -34,6 +34,9 @@ setup(
     url='https://github.com/jrief/django-sass-processor',
     install_requires=[],
     extras_require={
+        'management-command': [
+            'django-compressor>=2.4',
+        ],
         'dev': [
             'libsass>=0.13',
         ],
