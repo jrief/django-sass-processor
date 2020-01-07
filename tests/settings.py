@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import os
 
 from tests.jinja2 import environment

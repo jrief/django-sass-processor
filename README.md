@@ -5,22 +5,31 @@ Annoyed having to run a Compass, Grunt or Gulp daemon while developing Django pr
 Well, then this app is for you! Compile SASS/SCSS files on the fly without having to manage
 third party services nor special IDE plugins.
 
+[![Build Status](https://travis-ci.org/jrief/django-sass-processor.svg)](https://travis-ci.org/jrief/django-sass-processor)
+[![PyPI](https://img.shields.io/pypi/pyversions/django-sass-processor.svg)]()
+[![PyPI version](https://img.shields.io/pypi/v/django-sass-processor.svg)](https://pypi.python.org/pypi/django-sass-processor)
+[![PyPI](https://img.shields.io/pypi/l/django-sass-processor.svg)]()
+[![Downloads](https://img.shields.io/pypi/dm/django-sass-processor.svg)](https://pypi.python.org/pypi/django-sass-processor)
+[![Twitter Follow](https://img.shields.io/twitter/follow/shields_io.svg?style=social&label=Follow&maxAge=2592000)](https://twitter.com/jacobrief)
+
+**Version 0.7.5 will be the latest version to support Python-2.7** 
+
+The master branch of **django-sass-processor** already supports Django-3.0. However,
+[django-compressor](https://django-compressor.readthedocs.io/en/stable/) (which it depends on)
+[does not yet support Django-3.0](https://github.com/django-compressor/django-compressor/issues/980),
+hence I have to wait until a new version of django-compressor is available on PyPI.
+Until then, please use the master branch if you need Django-3.0.
+
 
 ## Other good reasons for using this library
 
 * Refer SASS/SCSS files directly from your sources, instead of referring a compiled CSS file,
 having to rely on another utility which creates them from SASS/SCSS files, hidden in
 your source tree.
-* Use Django's `settings.py` for the configuration of pathes, box sizes etc., instead of having another
+* Use Django's `settings.py` for the configuration of paths, box sizes etc., instead of having another
 SCSS specific file (typically `_variables.scss`), to hold these.
 * Extend your SASS functions by calling Python functions directly out of your Django project.
 * View SCSS errors directly in the debug console of your Django's development server.
-
-[![Build Status](https://travis-ci.org/jrief/django-sass-processor.svg)](https://travis-ci.org/jrief/django-sass-processor)
-[![PyPI](https://img.shields.io/pypi/pyversions/django-sass-processor.svg)]()
-[![PyPI version](https://img.shields.io/pypi/v/django-sass-processor.svg)](https://https://pypi.python.org/pypi/django-sass-processor)
-[![PyPI](https://img.shields.io/pypi/l/django-sass-processor.svg)]()
-[![Twitter Follow](https://img.shields.io/twitter/follow/shields_io.svg?style=social&label=Follow&maxAge=2592000)](https://twitter.com/jacobrief)
 
 **django-sass-processor** converts `*.scss` or `*.sass` files into `*.css` while rendering
 templates. For performance reasons this is done only once, since the preprocessor keeps track on
@@ -72,9 +81,9 @@ In `settings.py` add to:
 
 ```python
 INSTALLED_APPS = [
-    …
+    ...
     'sass_processor',
-    …
+    ...
 ]
 ```
 
@@ -84,7 +93,7 @@ your `settings.py`. If there is no `STATICFILES_FINDERS` in your `settings.py` d
 to include the **Django** [default finders](https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-STATICFILES_FINDERS).
 
 If the directory referred by `SASS_PROCESSOR_ROOT` does not exist, then **django-sass-processor**
-creates it. This does does not apply, if `SASS_PROCESSOR_ROOT` is unset and hence defaults to
+creates it. This does not apply, if `SASS_PROCESSOR_ROOT` is unset and hence defaults to
 `STATIC_ROOT`. Therefore it is a good idea to otherwise use `SASS_PROCESSOR_ROOT = STATIC_ROOT`
 in your `settings.py`.
 
@@ -93,12 +102,12 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'sass_processor.finders.CssFinder',
-    …
+    ...
 ]
 ```
 
 Optionally, add a list of additional search paths, the SASS compiler may examine when using the
-`@import "…";` statement in SASS/SCSS files:
+`@import "...";` statement in SASS/SCSS files:
 
 ```python
 import os
@@ -130,11 +139,11 @@ SASS_PROCESSOR_INCLUDE_FILE_PATTERN = r'^.+\.scss$'
 will look for all files of type `scss`. Remember that SASS/SCSS files which start with an
 underscore, are intended to be imported by other SASS/SCSS files, while files starting with a
 letter or number are intended to be included by the HTML tag
-`<link href="{% sass_src 'path/to/file.scss' %}" …>`.
+`<link href="{% sass_src 'path/to/file.scss' %}" ...>`.
 
 During development, or when `SASS_PROCESSOR_ENABLED = True`, the compiled file is placed into the
 folder referenced by `SASS_PROCESSOR_ROOT` (if unset, this setting defaults to `STATIC_ROOT`).
-Having a location outside of the working directory prevents to pollute your local `static/css/…`
+Having a location outside of the working directory prevents to pollute your local `static/css/...`
 directories with auto-generated files. Therefore assure, that this directory is writable by the
 Django runserver.
 
@@ -176,7 +185,7 @@ TEMPLATES = [{
     'OPTIONS': {
         'environment': 'yourapp.jinja2.environment'
     },
-    …
+    ...
 }]
 ```
 
@@ -235,8 +244,8 @@ in Django's admin or form framework.
 ```python
 from sass_processor.processor import sass_processor
 
-class SomeAdminOrFormClass(…):
-    …
+class SomeAdminOrFormClass(...):
+    ...
     class Media:
         css = {
             'all': [sass_processor('myapp/css/mystyle.scss')],
@@ -361,9 +370,9 @@ accessible through the Django's `django.contrib.staticfiles.finders.FileSystemFi
 
 ```python
 STATICFILES_DIRS = [
-    …
+    ...
     ('node_modules', '/path/to/your/project/node_modules/'),
-    …
+    ...
 ]
 
 NODE_MODULES_URL = STATIC_URL + 'node_modules/'
@@ -422,6 +431,11 @@ STATICFILES_STORAGE = 'sass_processor.storage.SassS3Boto3Storage'
 ```
 
 
+## Heroku
+
+If you are deploying to [Heroku](https://www.heroku.com/), use the [heroku-buildpack-django-sass](https://elements.heroku.com/buildpacks/drpancake/heroku-buildpack-django-sass) buildpack to automatically compile scss for you.
+
+
 ## Development
 
 To run the tests locally, clone the repository, create a new virtualenv, activate it and then run
@@ -432,117 +446,3 @@ cd django-sass-processor
 pip install tox
 tox
 ```
-
-## Changelog
-
-- 0.7.2
-* Prevent empty content when using autoprefixer.
-
-* Source Map is now using relative paths. This fixes the path naming problems on Windows platforms.
-- 0.7.1
-
-* Source Map is now using relative paths. This fixes the path naming problems on Windows platforms.
-
-
-- 0.7
-
-* Allow to call directly into Python functions.
-
-- 0.6
-
-* Add autoprefixing via external postcss.
-
-- 0.5.8
-
-* _Potentially Breaking_: `libsass` is not autoinstalled as the dependency anymore.
-* Add support for Django-2.0.
-
-- 0.5.7
-
-* Fixed: Catch exception if s3boto is not installed.
-
-- 0.5.6
-
-* Added compatibility layer to work with AWS S3 Storage.
-
-- 0.5.5
-
-* Create directory `SASS_PROCESSOR_ROOT` if it does not exist.
-
-- 0.5.4
-
-* Added unit tests and continuous integration to the project.
-
-- 0.5.3
-
-* Fixed compilescss: Did not find calls of sass_processor within a dict, list or tuple
-
-- 0.5.2
-
-* Fixed Python 3 incompatibility. Open files as binaries, since they may contain unicode characters.
-
-- 0.5.1
-
-* Add `APPS_INCLUDE_DIRS` to the SASS include path.
-
-- 0.5.0
-
-* SASS/SCSS files can also be referenced in pure Python files, for instance in `Media` class or
-  `media` property definitions.
-* The SASS processor will look for potential include directories, so that the `@import "..."`
-  statement also works for SASS files located in other Django apps.
-
-- 0.4.0 - 0.4.4
-
-* Refactored the sass processor into a self-contained class `SassProcessor`, which can be accessed
-  through an API, the Jinja2 template engine and the existing templatetag.
-
-- 0.3.5
-
-* Added Jinja2 support, see [Jinja2 support](#jinja2-support).
-
-- 0.3.4
-
-* Fixed: `get_template_sources()` in Django-1.9 returns Objects rather than strings.
-* In command, use `ArgumentParser` rather than `OptionParser`.
-
-- 0.3.1...0.3.3
-
-* Changed the build process in `setup.py`.
-
-- 0.3.0
-
-* Compatible with Django 1.8+.
-* bootstrap3-sass ready: appropriate floating point precision (8) can be set in `settings.py`.
-* Offline compilation results may optionally be stored in `SASS_PROCESSOR_ROOT`.
-
-- 0.2.6
-
-* Hotfix: added SASS function `get-setting` also to offline compiler.
-
-- 0.2.5
-
-* Compatible with Python3
-* Replaced `SortedDict` with `OrderedDict` to be prepared for Django-1.9
-* Raise a `TemplateSyntax` error, if a SASS `@include "..."` fails to find the file.
-* Added SASS function `get-setting` to fetch configuration directives from `settings.py`.
-
-- 0.2.4
-
-* Forcing compiled unicode to bytes, since 'Font Awesome' uses Unicode Private Use Area (PUA)
-  and hence implicit conversion on `fh.write()` failed.
-
-- 0.2.3
-
-* Allow for setting template extensions and output style.
-* Force Django to calculate template_source_loaders from TEMPLATE_LOADERS settings, by asking to find a dummy template.
-
-- 0.2.0
-
-* Removed dependency to **django-sekizai** and **django-classy-tags**. It now can operate in
-  stand-alone mode. Therefore the project has been renamed to **django-sass-processor**.
-
-- 0.1.0
-
-* Initial revision named **django-sekizai-processors**, based on a preprocessor for the Sekizai
-  template tags `{% addtoblock %}`.

@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 """
 See PEP 386 (https://www.python.org/dev/peps/pep-0386/)
 
@@ -21,6 +18,6 @@ Release logic:
 13. git push
 """
 
-__version__ = '0.7.2'
+__version__ = '0.8'
 
 default_app_config = 'sass_processor.apps.SassProcessorConfig'

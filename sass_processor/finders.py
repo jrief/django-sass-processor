@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 from collections import OrderedDict
 from django.conf import settings
@@ -23,7 +22,7 @@ class CssFinder(FileSystemFinder):
             try:
                 location = getattr(settings, 'SASS_PROCESSOR_ROOT')
                 os.makedirs(location)
-            except AttributeError:
+            except (AttributeError, OSError):
                 return
         self.locations = [
             ('', location),
@@ -35,5 +34,15 @@ class CssFinder(FileSystemFinder):
 
     def find(self, path, all=False):
         if path.endswith('.css') or path.endswith('.css.map'):
-            return super(CssFinder, self).find(path, all)
+            return super().find(path, all)
         return []
+
+    def list(self, ignore_patterns):
+        """
+        Do not list the contents of the configured storages, since this has already been done by
+        the other finder of type FileSystemFinder.
+        This prevents the warning ``Found another file with the destination path ...``, while
+        issuing ``./manage.py collectstatic``.
+        """
+        if False:
+            yield
