@@ -2,7 +2,9 @@ import os
 
 import ast
 from importlib import import_module
+import re
 import sass
+from functools import reduce
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
 
 from django.apps import apps
@@ -83,6 +85,11 @@ class Command(BaseCommand):
             help=_(
                 "Set the precision for numeric computations in the SASS processor. Default: settings.SASS_PRECISION.")
         )
+        parser.add_argument(
+            '--ignore',
+            action='append',
+            dest='ignore',
+            help=_("Ignore templates matching these regexes"))
 
     def get_loaders(self):
         template_source_loaders = []
@@ -132,6 +139,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.verbosity = int(options['verbosity'])
         self.delete_files = options['delete_files']
+        self.ignore_regexes = options['ignore']
         self.use_static_root = options['use_processor_root']
         if self.use_static_root:
             self.static_root = getattr(settings, 'SASS_PROCESSOR_ROOT', settings.STATIC_ROOT)
@@ -235,9 +243,11 @@ class Command(BaseCommand):
                 templates.update(os.path.join(root, name)
                                  for name in files if not name.startswith('.') and
                                  any(name.endswith(ext) for ext in self.template_exts))
+        if self.ignore_regexes:
+            templates = set(filter(lambda template: not reduce(lambda accum, ignore_re: accum and re.search(ignore_re, template), self.ignore_regexes, True),templates))
         if not templates:
             raise CommandError(
-                "No templates found. Make sure your TEMPLATE_LOADERS and TEMPLATE_DIRS settings are correct.")
+                "No templates found. Make sure your TEMPLATE_LOADERS and TEMPLATE_DIRS settings are correct and ignore list isn't too inclusive.")
         return templates
 
     def parse_template(self, template_name):
