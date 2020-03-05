@@ -1,5 +1,13 @@
 # Changes for django-sass-processor
 
+- 0.8
+* Add support for Django-3.0.
+* Drop support for Python<3.
+
+- 0.7.5
+* Latest version to support Python-2.7. Tested with Django-1.9, Django-1.10, Django-1.11, Django-2.0
+  Django-2.1 and Django-2.2 using Python-3.5...3.7.
+
 - 0.7.4
 * Prevent the warnings about `Found another file with the destination path ...`, while
   running `./manage.py collectstatic`.

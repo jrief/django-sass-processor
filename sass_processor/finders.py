@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 from collections import OrderedDict
 from django.conf import settings
@@ -35,7 +34,7 @@ class CssFinder(FileSystemFinder):
 
     def find(self, path, all=False):
         if path.endswith('.css') or path.endswith('.css.map'):
-            return super(CssFinder, self).find(path, all)
+            return super().find(path, all)
         return []
 
     def list(self, ignore_patterns):

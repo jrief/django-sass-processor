@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import os
 
 import ast
+from importlib import import_module
 import sass
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
+
 from django.apps import apps
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -16,7 +15,7 @@ from django.template.loader import \
     get_template  # in order to preload template locations
 from django.utils.encoding import force_bytes
 from django.utils.translation import gettext_lazy as _
-from importlib import import_module
+
 from sass_processor.apps import APPS_INCLUDE_DIRS
 from sass_processor.processor import SassProcessor
 from sass_processor.storage import SassFileStorage, find_file
@@ -53,7 +52,7 @@ class Command(BaseCommand):
                                          'nested' if settings.DEBUG else 'compressed')
         self.use_static_root = False
         self.static_root = ''
-        super(Command, self).__init__()
+        super().__init__()
 
     def add_arguments(self, parser):
         parser.add_argument(

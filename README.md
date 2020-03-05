@@ -12,6 +12,15 @@ third party services nor special IDE plugins.
 [![Downloads](https://img.shields.io/pypi/dm/django-sass-processor.svg)](https://pypi.python.org/pypi/django-sass-processor)
 [![Twitter Follow](https://img.shields.io/twitter/follow/shields_io.svg?style=social&label=Follow&maxAge=2592000)](https://twitter.com/jacobrief)
 
+**Version 0.7.5 will be the latest version to support Python-2.7** 
+
+The master branch of **django-sass-processor** already supports Django-3.0. However,
+[django-compressor](https://django-compressor.readthedocs.io/en/stable/) (which it depends on)
+[does not yet support Django-3.0](https://github.com/django-compressor/django-compressor/issues/980),
+hence I have to wait until a new version of django-compressor is available on PyPI.
+Until then, please use the master branch if you need Django-3.0.
+
+
 ## Other good reasons for using this library
 
 * Refer SASS/SCSS files directly from your sources, instead of referring a compiled CSS file,
