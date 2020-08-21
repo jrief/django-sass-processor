@@ -14,11 +14,14 @@ env:
   - DJANGOVER=django21
   - DJANGOVER=django22
   - DJANGOVER=django30
+  - DJANGOVER=django31
 
 matrix:
   exclude:
     - python: 3.5
       env: DJANGOVER=django30
+    - python: 3.5
+      env: DJANGOVER=django31
 
 install:
   - pip install tox
