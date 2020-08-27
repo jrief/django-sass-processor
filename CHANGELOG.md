@@ -1,6 +1,6 @@
 # Changes for django-sass-processor
 
-- unreleased
+- 0.8.1
 * Add support for Django-3.1.
 
 - 0.8
