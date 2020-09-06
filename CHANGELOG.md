@@ -1,5 +1,8 @@
 # Changes for django-sass-processor
 
+- 0.8.1
+* Add support for Django-3.1.
+
 - 0.8
 * Add support for Django-3.0.
 * Drop support for Python<3.
