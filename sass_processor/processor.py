@@ -2,6 +2,7 @@ from urllib.parse import quote, urljoin
 import os
 import json
 import logging
+from pathlib import Path
 import subprocess
 
 from django.apps import apps
@@ -46,12 +47,13 @@ class SassProcessor:
         self.node_modules_dir = nmd[0] if len(nmd) else None
 
     def __call__(self, path):
-        basename, ext = os.path.splitext(path)
+        basename, suffix = Path(path).stem, Path(path).suffix
+        # basename, ext = os.path.splitext(path)
         filename = find_file(path)
         if filename is None:
             raise FileNotFoundError("Unable to locate file {path}".format(path=path))
 
-        if ext not in self.sass_extensions:
+        if suffix not in self.sass_extensions:
             # return the given path, since it ends neither in `.scss` nor in `.sass`
             return path
 
@@ -60,8 +62,8 @@ class SassProcessor:
         if not self.processor_enabled:
             return css_filename
         sourcemap_filename = css_filename + '.map'
-        base = os.path.dirname(filename)
-        if find_file(css_filename) and self.is_latest(sourcemap_filename, base):
+        # base = Path(filename).parent
+        if find_file(css_filename) and self.is_latest(sourcemap_filename, Path(filename).parent):
             return css_filename
 
         # with offline compilation, raise an error, if css file could not be found.
@@ -70,7 +72,7 @@ class SassProcessor:
             raise ImproperlyConfigured(msg.format(css_filename))
 
         # otherwise compile the SASS/SCSS file into .css and store it
-        filename_map = filename.replace(ext, '.css.map')
+        filename_map = filename.replace(suffix, '.css.map')
         compile_kwargs = {
             'filename': filename,
             'source_map_filename': filename_map,
@@ -85,7 +87,7 @@ class SassProcessor:
         content, sourcemap = force_bytes(content), force_bytes(sourcemap)
 
         # autoprefix CSS files using postcss in external JavaScript process
-        if self.node_npx_path and os.path.isdir(self.node_modules_dir or ''):
+        if self.node_npx_path and Path(self.node_modules_dir or '').is_dir():
             os.environ['NODE_PATH'] = self.node_modules_dir
             try:
                 options = [self.node_npx_path, 'postcss', '--use', 'autoprefixer']
@@ -116,19 +118,19 @@ class SassProcessor:
         return self._path.resolve(context)
 
     def is_sass(self):
-        _, ext = os.path.splitext(self.resolve_path())
-        return ext in self.sass_extensions
+        suffix = Path(self.resolve_path()).suffix
+        return suffix in self.sass_extensions
 
     def is_latest(self, sourcemap_filename, base):
         sourcemap_file = find_file(sourcemap_filename)
-        if not sourcemap_file or not os.path.isfile(sourcemap_file):
+        if not sourcemap_file or not Path(sourcemap_file).is_file():
             return False
         sourcemap_mtime = os.stat(sourcemap_file).st_mtime
         with open(sourcemap_file, 'r') as fp:
             sourcemap = json.load(fp)
-        for srcfilename in sourcemap.get('sources'):
-            srcfilename = os.path.join(base, srcfilename)
-            if not os.path.isfile(srcfilename) or os.stat(srcfilename).st_mtime > sourcemap_mtime:
+        for srcfilepath in sourcemap.get('sources'):
+            srcfilepath = Path(base) / srcfilepath
+            if not srcfilepath.is_file() or srcfilepath.stat().st_mtime > sourcemap_mtime:
                 # at least one of the source is younger that the sourcemap referring it
                 return False
         return True

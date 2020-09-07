@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from tests.jinja2 import environment
 
@@ -64,7 +64,7 @@ SECRET_KEY = 'secret'
 
 STATIC_URL = '/static/'
 
-PROJECT_ROOT = os.path.abspath(os.path.join(__file__, os.path.pardir))
+PROJECT_ROOT = Path(__file__).parent.resolve()
 
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -73,7 +73,7 @@ STATICFILES_FINDERS = [
 ]
 
 STATICFILES_DIRS = [
-    os.path.join(PROJECT_ROOT, 'static'),
+    (Path(PROJECT_ROOT) / 'static').resolve(),
 ]
 
 SASS_PROCESSOR_ENABLED = True

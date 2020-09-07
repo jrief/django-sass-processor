@@ -1,5 +1,6 @@
-import os
 from collections import OrderedDict
+from pathlib import Path
+
 from django.conf import settings
 from django.contrib.staticfiles.finders import FileSystemFinder
 from django.core.exceptions import ImproperlyConfigured
@@ -18,11 +19,11 @@ class CssFinder(FileSystemFinder):
         if not location:
             msg = "Neither 'SASS_PROCESSOR_ROOT' nor 'STATIC_ROOT' has been declared in project settings."
             raise ImproperlyConfigured(msg)
-        if not os.path.isdir(location):
+        if not Path(location).is_dir():
             try:
                 location = getattr(settings, 'SASS_PROCESSOR_ROOT')
-                os.makedirs(location)
-            except (AttributeError, OSError):
+                Path(location).mkdir(parents=True, exist_ok=True)
+            except AttributeError:
                 return
         self.locations = [
             ('', location),
