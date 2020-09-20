@@ -76,7 +76,7 @@ class SassProcessor:
         compile_kwargs = {
             'filename': filename,
             'source_map_filename': filename_map,
-            'include_paths': self.include_paths + APPS_INCLUDE_DIRS,
+            'include_paths': [str(ip) for ip in self.include_paths + APPS_INCLUDE_DIRS],
             'custom_functions': get_custom_functions(),
         }
         if self.sass_precision:

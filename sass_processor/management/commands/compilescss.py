@@ -185,26 +185,16 @@ class Command(BaseCommand):
         if app_config.auto_include:
             app_configs = apps.get_app_configs()
             for app_config in app_configs:
-                ignore_dirs = []
-                for root, dirs, files in os.walk(app_config.path):
-                    if [True for idir in ignore_dirs if root.startswith(idir)]:
-                        continue
-                    if '__init__.py' not in files:
-                        ignore_dirs.append(root)
-                        continue
-                    for filename in files:
-                        if Path(filename).suffix != '.py':
-                            continue
-                        yield (Path(root) / filename).resolve()
-                        # yield os.path.abspath(os.path.join(root, filename))
+                for path in Path(app_config.path).rglob('*.py'):
+                    yield path
 
-    def parse_source(self, filename):
+    def parse_source(self, filepath):
         """
         Extract the statements from the given file, look for function calls
         `sass_processor(scss_file)` and compile the filename into CSS.
         """
         callvisitor = FuncCallVisitor('sass_processor')
-        tree = ast.parse(open(filename, 'rb').read())
+        tree = ast.parse(filepath.open('rb').read())
         callvisitor.visit(tree)
         for sass_fileurl in callvisitor.sass_files:
             sass_filename = find_file(sass_fileurl)
@@ -284,7 +274,7 @@ class Command(BaseCommand):
         """
         compile_kwargs = {
             'filename': sass_filename,
-            'include_paths': SassProcessor.include_paths + APPS_INCLUDE_DIRS,
+            'include_paths': [str(ip) for ip in SassProcessor.include_paths + APPS_INCLUDE_DIRS],
             'custom_functions': get_custom_functions(),
         }
         if self.sass_precision:
@@ -313,11 +303,12 @@ class Command(BaseCommand):
 
     def save_to_destination(self, content, sass_filename, sass_fileurl):
         if self.use_static_root:
-            destpath = Path(self.static_root) / Path(sass_fileurl).stem + '.css'
-            self.storage.save(destpath.resolve(), ContentFile(content))
+            destpath = Path(self.static_root) / (Path(sass_fileurl).stem + '.css')
+            self.storage.save(str(destpath), ContentFile(content))
         else:
             destpath = Path(sass_filename).stem + '.css'
-            destpath.open('wb').write_bytes(force_bytes(content))
+            with open(destpath, 'wb') as fh:
+                fh.write(force_bytes(content))
 
     def walk_nodes(self, node, original):
         """
