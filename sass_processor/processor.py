@@ -36,6 +36,7 @@ class SassProcessor:
         'SASS_OUTPUT_STYLE',
         'nested' if settings.DEBUG else 'compressed')
     processor_enabled = getattr(settings, 'SASS_PROCESSOR_ENABLED', settings.DEBUG)
+    fail_silently = getattr(settings, 'SASS_PROCESSOR_FAIL_SILENTLY', not settings.DEBUG)
     sass_extensions = ('.scss', '.sass')
     node_npx_path = getattr(settings, 'NODE_NPX_PATH', 'npx')
 
@@ -81,8 +82,14 @@ class SassProcessor:
             compile_kwargs['precision'] = self.sass_precision
         if self.sass_output_style:
             compile_kwargs['output_style'] = self.sass_output_style
-        content, sourcemap = sass.compile(**compile_kwargs)
-        content, sourcemap = force_bytes(content), force_bytes(sourcemap)
+        try:
+            content, sourcemap = (force_bytes(output) for output in sass.compile(**compile_kwargs))
+        except sass.CompileError as exc:
+            if self.fail_silently:
+                content, sourcemap = force_bytes(exc), None
+                logger.error(exc)
+            else:
+                raise exc
 
         # autoprefix CSS files using postcss in external JavaScript process
         if self.node_npx_path and os.path.isdir(self.node_modules_dir or ''):
@@ -107,7 +114,8 @@ class SassProcessor:
         self.storage.save(css_filename, ContentFile(content))
         if self.storage.exists(sourcemap_filename):
             self.storage.delete(sourcemap_filename)
-        self.storage.save(sourcemap_filename, ContentFile(sourcemap))
+        if sourcemap:
+            self.storage.save(sourcemap_filename, ContentFile(sourcemap))
         return css_filename
 
     def resolve_path(self, context=None):
