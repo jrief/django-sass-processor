@@ -1,7 +1,6 @@
 import calendar
 import os
 import shutil
-import tempfile
 from datetime import datetime
 
 from django.conf import settings
