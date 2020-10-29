@@ -85,3 +85,6 @@ SASS_PROCESSOR_CUSTOM_FUNCTIONS = {
 }
 
 SASS_BLUE_COLOR = '#0000ff'
+
+
+STATIC_ROOT = os.path.join(os.path.dirname(__file__), "tmpstatic")

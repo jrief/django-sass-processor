@@ -180,20 +180,22 @@ class Command(BaseCommand):
         """
         Look for Python sources available for the current configuration.
         """
-        app_configs = apps.get_app_configs()
-        for app_config in app_configs:
-            ignore_dirs = []
-            for root, dirs, files in os.walk(app_config.path):
-                if [True for idir in ignore_dirs if root.startswith(idir)]:
-                    continue
-                if '__init__.py' not in files:
-                    ignore_dirs.append(root)
-                    continue
-                for filename in files:
-                    basename, ext = os.path.splitext(filename)
-                    if ext != '.py':
+        app_config = apps.get_app_config('sass_processor')
+        if app_config.auto_include:
+            app_configs = apps.get_app_configs()
+            for app_config in app_configs:
+                ignore_dirs = []
+                for root, dirs, files in os.walk(app_config.path):
+                    if [True for idir in ignore_dirs if root.startswith(idir)]:
                         continue
-                    yield os.path.abspath(os.path.join(root, filename))
+                    if '__init__.py' not in files:
+                        ignore_dirs.append(root)
+                        continue
+                    for filename in files:
+                        basename, ext = os.path.splitext(filename)
+                        if ext != '.py':
+                            continue
+                        yield os.path.abspath(os.path.join(root, filename))
 
     def parse_source(self, filename):
         """

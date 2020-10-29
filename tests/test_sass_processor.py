@@ -10,7 +10,6 @@ from django.template.loader import get_template
 from django.test import TestCase, override_settings
 
 
-@override_settings(STATIC_ROOT=tempfile.mktemp('static'))
 class SassProcessorTest(TestCase):
 
     def setUp(self):

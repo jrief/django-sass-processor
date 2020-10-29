@@ -423,6 +423,17 @@ Such customized functions must accept parameters explicilty, otherwise `sass_pro
 know how to map them. Variable argument lists therefore can not be used.
 
 
+## Error reporting
+
+Whenever **django-sass-processor** runs in debug mode and fails to compile a SASS/SCSS file, it
+raises a `sass.CompileError` exception. This shows the location of the error directly on the
+Django debug console and is very useful during development.
+
+This behaviour can be overridden using the settings variable `SASS_PROCESSOR_FAIL_SILENTLY`.
+If it is set to `True`, instead of raising that exception, the compilation error message is send
+to the Django logger.
+
+
 ## Serving static files with S3
 
 A custom Storage class is provided for use if your deployment serves css files out of S3. You must have Boto 3 installed. To use it, add this to your settings file:
