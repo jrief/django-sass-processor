@@ -3,14 +3,12 @@ import os
 import shutil
 from datetime import datetime
 
-import py
 from django.conf import settings
 from django.core.management import call_command
 from django.template.loader import get_template
 from django.test import TestCase, override_settings
 
 
-@override_settings(STATIC_ROOT=py.test.ensuretemp('static').strpath)
 class SassProcessorTest(TestCase):
 
     def setUp(self):

@@ -1,5 +1,11 @@
 # Changes for django-sass-processor
 
+- 0.8.2
+* Fixes: Management command `find_sources` does not ignore `SASS_PROCESSOR_AUTO_INCLUDE`.
+
+- 0.8.1
+* Add support for Django-3.1.
+
 - 0.8
 * Add support for Django-3.0.
 * Drop support for Python<3.

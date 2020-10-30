@@ -12,11 +12,11 @@ class SassProcessorConfig(AppConfig):
     name = 'sass_processor'
     verbose_name = "Sass Processor"
     _storage = get_storage_class(import_path=settings.STATICFILES_STORAGE)()
-    _auto_include = getattr(settings, 'SASS_PROCESSOR_AUTO_INCLUDE', True)
+    auto_include = getattr(settings, 'SASS_PROCESSOR_AUTO_INCLUDE', True)
     _pattern = re.compile(getattr(settings, 'SASS_PROCESSOR_INCLUDE_FILE_PATTERN', r'^_.+\.(scss|sass)$'))
 
     def ready(self):
-        if self._auto_include:
+        if self.auto_include:
             app_configs = apps.get_app_configs()
             for app_config in app_configs:
                 static_dir = os.path.join(app_config.path, AppDirectoriesFinder.source_dir)
