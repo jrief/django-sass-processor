@@ -50,8 +50,7 @@ class Command(BaseCommand):
         self.template_exts = getattr(settings, 'SASS_TEMPLATE_EXTS', ['.html'])
         self.sass_output_style = getattr(settings, 'SASS_OUTPUT_STYLE',
                                          'nested' if settings.DEBUG else 'compressed')
-        self.use_static_root = False
-        self.static_root = ''
+        self.use_storage = False
         super().__init__()
 
     def add_arguments(self, parser):
@@ -63,11 +62,11 @@ class Command(BaseCommand):
             help=_("Delete generated `*.css` files instead of creating them.")
         )
         parser.add_argument(
-            '--use-processor-root',
+            '--use-storage',
             action='store_true',
-            dest='use_processor_root',
+            dest='use_storage',
             default=False,
-            help=_("Store resulting .css in settings.SASS_PROCESSOR_ROOT folder. "
+            help=_("Store resulting .css in configured storage. "
                    "Default: store each css side-by-side with .scss.")
         )
         parser.add_argument(
@@ -132,9 +131,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.verbosity = int(options['verbosity'])
         self.delete_files = options['delete_files']
-        self.use_static_root = options['use_processor_root']
-        if self.use_static_root:
-            self.static_root = getattr(settings, 'SASS_PROCESSOR_ROOT', settings.STATIC_ROOT)
+        self.use_storage = options['use_storage']
 
         engines = [e.strip() for e in options.get('engines', [])] or ['django']
         for engine in engines:
@@ -300,20 +297,28 @@ class Command(BaseCommand):
         """
         Delete a *.css file, but only if it has been generated through a SASS/SCSS file.
         """
-        if self.use_static_root:
-            destpath = os.path.join(self.static_root, os.path.splitext(sass_fileurl)[0] + '.css')
+        if self.use_storage:
+            destpath = os.path.splitext(sass_fileurl)[0] + '.css'
+            if self.storage.exists(destpath):
+                self.storage.delete(destpath)
+            else:
+                return
         else:
             destpath = os.path.splitext(sass_filename)[0] + '.css'
-        if os.path.isfile(destpath):
-            os.remove(destpath)
-            self.processed_files.append(sass_filename)
-            if self.verbosity > 1:
-                self.stdout.write("Deleted '{0}'\n".format(destpath))
+            if os.path.isfile(destpath):
+                os.remove(destpath)
+            else:
+                return
+        self.processed_files.append(sass_filename)
+        if self.verbosity > 1:
+            self.stdout.write("Deleted '{0}'\n".format(destpath))
 
     def save_to_destination(self, content, sass_filename, sass_fileurl):
-        if self.use_static_root:
+        if self.use_storage:
             basename, _ = os.path.splitext(sass_fileurl)
-            destpath = os.path.join(self.static_root, basename + '.css')
+            destpath = basename + '.css'
+            if self.storage.exists(destpath):
+                self.storage.delete(destpath)
             self.storage.save(destpath, ContentFile(content))
         else:
             basename, _ = os.path.splitext(sass_filename)
