@@ -1,6 +1,6 @@
 # Changes for django-sass-processor
 
-- 1.0.0
+- 1.0.0.dev
 * Management command `compilescss` now uses the same storage as the template tags.
 * Any storage can now be used as destination.
 * Breaking change: The argument `--use-processor-root` to `compilescss` was replaced
