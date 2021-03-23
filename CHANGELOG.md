@@ -1,5 +1,13 @@
 # Changes for django-sass-processor
 
+- 1.0.0
+* Management command `compilescss` now uses the same storage as the template tags.
+* Any storage can now be used as destination.
+* Breaking change: The argument `--use-processor-root` to `compilescss` was replaced
+  with `--use-storage`.
+* Breaking change: `SassS3Boto3Storage` was removed. Use the `S3Boto3Storage` from
+  django-storages directly.
+
 - 0.8.2
 * Fixes: Management command `find_sources` does not ignore `SASS_PROCESSOR_AUTO_INCLUDE`.
 
