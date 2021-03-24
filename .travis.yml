@@ -7,6 +7,7 @@ python:
   - 3.6
   - 3.7
   - 3.8
+  - 3.9
 
 env:
   - DJANGOVER=django111
@@ -31,4 +32,5 @@ script:
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.6' && $DJANGOVER ]]; then export TOX_ENV=py36-$DJANGOVER; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.7' && $DJANGOVER ]]; then export TOX_ENV=py37-$DJANGOVER; fi"
   - "if [[ $TRAVIS_PYTHON_VERSION == '3.8' && $DJANGOVER ]]; then export TOX_ENV=py38-$DJANGOVER; fi"
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.9' && $DJANGOVER ]]; then export TOX_ENV=py39-$DJANGOVER; fi"
   - tox -r -e "$TOX_ENV"
