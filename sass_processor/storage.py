@@ -1,25 +1,19 @@
 from django.conf import settings
 from django.contrib.staticfiles.finders import get_finders
-from django.core.exceptions import ImproperlyConfigured
-from django.core.files.storage import FileSystemStorage
+from django.core.files.storage import get_storage_class
+from django.utils.functional import LazyObject
 
 
-class SassFileStorage(FileSystemStorage):
-    def __init__(self, location=None, base_url=None, *args, **kwargs):
-        if location is None:
-            location = getattr(settings, 'SASS_PROCESSOR_ROOT', settings.STATIC_ROOT)
-        if base_url is None:
-            base_url = settings.STATIC_URL
-        super().__init__(location, base_url, *args, **kwargs)
+class SassFileStorage(LazyObject):
+    def _setup(self):
+        storage_path = getattr(settings, 'SASS_PROCESSOR_STORAGE', settings.STATICFILES_STORAGE)
+        storage_options = getattr(settings, 'SASS_PROCESSOR_STORAGE_OPTIONS', {})
+        if storage_path == settings.STATICFILES_STORAGE:
+            storage_options['location'] = getattr(settings, 'SASS_PROCESSOR_ROOT', settings.STATIC_ROOT)
+            storage_options['base_url'] = settings.STATIC_URL
 
-try:
-    from storages.backends.s3boto3 import S3Boto3Storage
-
-    class SassS3Boto3Storage(S3Boto3Storage):
-        base_url = '{}.s3.amazonaws.com'.format(settings.AWS_STORAGE_BUCKET_NAME)
-
-except (AttributeError, ImportError, ImproperlyConfigured):
-    pass
+        storage_class = get_storage_class(storage_path)
+        self._wrapped = storage_class(**storage_options)
 
 
 def find_file(path):

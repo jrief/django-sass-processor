@@ -88,7 +88,7 @@ class SassProcessorTest(TestCase):
             'compilescss',
             **kwargs
         )
-        if kwargs.get('use_processor_root', False):
+        if kwargs.get('use_storage', False):
             css_file = os.path.join(settings.STATIC_ROOT, 'tests/css/main.css')
         else:
             css_file = os.path.join(settings.PROJECT_ROOT, 'static/tests/css/main.css')
@@ -98,7 +98,7 @@ class SassProcessorTest(TestCase):
         self.assertEqual(expected, output)
         self.assertFalse(os.path.exists(css_file + '.map'))
 
-        if not kwargs.get('use_processor_root', False):
+        if not kwargs.get('use_storage', False):
             call_command('compilescss', delete_files=True)
             self.assertFalse(os.path.exists(css_file))
 
@@ -121,22 +121,22 @@ class SassProcessorTest(TestCase):
         )
 
     @override_settings(DEBUG=False)
-    def test_use_processor_root_django(self):
+    def test_use_storage_django(self):
         self.assert_management_command(
             engine='django',
-            use_processor_root=True
+            use_storage=True
         )
 
     @override_settings(DEBUG=False)
-    def test_use_processor_root_jinja2(self):
+    def test_use_storage_jinja2(self):
         self.assert_management_command(
             engine='jinja2',
-            use_processor_root=True
+            use_storage=True
         )
 
     @override_settings(DEBUG=False)
-    def test_use_processor_root_multiple(self):
+    def test_use_storage_multiple(self):
         self.assert_management_command(
             engine=['jinja2', 'django'],
-            use_processor_root=True
+            use_storage=True
         )

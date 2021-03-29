@@ -9,7 +9,6 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
 from django.template import Context
-from django.templatetags.static import PrefixNode
 from django.utils.encoding import force_bytes
 from sass_processor.utils import get_custom_functions
 
@@ -62,7 +61,7 @@ class SassProcessor:
             return css_filename
         sourcemap_filename = css_filename + '.map'
         base = os.path.dirname(filename)
-        if find_file(css_filename) and self.is_latest(sourcemap_filename, base):
+        if self.storage.exists(css_filename) and self.is_latest(sourcemap_filename, base):
             return css_filename
 
         # with offline compilation, raise an error, if css file could not be found.
@@ -127,12 +126,11 @@ class SassProcessor:
         _, ext = os.path.splitext(self.resolve_path())
         return ext in self.sass_extensions
 
-    def is_latest(self, sourcemap_filename, base):
-        sourcemap_file = find_file(sourcemap_filename)
-        if not sourcemap_file or not os.path.isfile(sourcemap_file):
+    def is_latest(self, sourcemap_file, base):
+        if not self.storage.exists(sourcemap_file):
             return False
-        sourcemap_mtime = os.stat(sourcemap_file).st_mtime
-        with open(sourcemap_file, 'r') as fp:
+        sourcemap_mtime = self.storage.get_modified_time(sourcemap_file).timestamp()
+        with self.storage.open(sourcemap_file, 'r') as fp:
             sourcemap = json.load(fp)
         for srcfilename in sourcemap.get('sources'):
             srcfilename = os.path.join(base, srcfilename)
@@ -143,11 +141,7 @@ class SassProcessor:
 
     @classmethod
     def handle_simple(cls, path):
-        if apps.is_installed('django.contrib.staticfiles'):
-            from django.contrib.staticfiles.storage import staticfiles_storage
-            return staticfiles_storage.url(path)
-        else:
-            return urljoin(PrefixNode.handle_simple('STATIC_URL'), quote(path))
+        return cls.storage.url(path)
 
 _sass_processor = SassProcessor()
 def sass_processor(filename):

@@ -85,11 +85,6 @@ in the directory referred by `SASS_PROCESSOR_ROOT` (or, if unset `STATIC_ROOT`).
 your `settings.py`. If there is no `STATICFILES_FINDERS` in your `settings.py` don't forget
 to include the **Django** [default finders](https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-STATICFILES_FINDERS).
 
-If the directory referred by `SASS_PROCESSOR_ROOT` does not exist, then **django-sass-processor**
-creates it. This does not apply, if `SASS_PROCESSOR_ROOT` is unset and hence defaults to
-`STATIC_ROOT`. Therefore it is a good idea to otherwise use `SASS_PROCESSOR_ROOT = STATIC_ROOT`
-in your `settings.py`.
-
 ```python
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -320,7 +315,7 @@ Or you may compile results to the `SASS_PROCESSOR_ROOT` directory directy (if no
 `STATIC_ROOT`):
 
 ```shell
-./manage.py compilescss --use-processor-root
+./manage.py compilescss --use-storage
 ```
 
 Combine with `--delete-files` switch to purge results from there.
@@ -427,11 +422,31 @@ If it is set to `True`, instead of raising that exception, the compilation error
 to the Django logger.
 
 
-## Serving static files with S3
+## Using other storage backends for compiled CSS files
 
-A custom Storage class is provided for use if your deployment serves css files out of S3. You must have Boto 3 installed. To use it, add this to your settings file:
+Under the hood, SASS processor will use any storage configured in your settings as `STATICFILES_STORAGE`.
+This means you can use anything you normally use for serving static files, e.g. S3.
+
+A custom Storage class can be used if your deployment needs to serve generated CSS files from elsewhere,
+e.g. when your static files storage is not writable at runtime and you nede to re-compile CSS
+in production. To use a custom storage, configure it in `SASS_PROCESSOR_STORAGE`. You can also
+configure a dictionary with options that will be passed to the storage class as keyword arguments
+in `SASS_PROCESSOR_STORAGE_OPTIONS` (e.g. if you want to use `FileSystemStorage`, but with
+a different `location` or `base_url`:
+
 ```
-STATICFILES_STORAGE = 'sass_processor.storage.SassS3Boto3Storage'
+SASS_PROCESSOR_STORAGE = 'django.core.files.storage.FileSystemStorage'
+SASS_PROCESSOR_STORAGE_OPTIONS = {
+    'location': '/srv/media/generated',
+    'base_url': 'https://media.myapp.example.com/generated'
+}
+```
+
+Using the S3 storage backend from [django-storages](https://django-storages.readthedocs.io/en/latest/)
+with its regular configuration (if you do not otherwise use it for service static files):
+
+```
+SASS_PROCESSOR_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 ```
 
 
