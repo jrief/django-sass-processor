@@ -10,9 +10,6 @@ python:
   - 3.9
 
 env:
-  - DJANGOVER=django111
-  - DJANGOVER=django20
-  - DJANGOVER=django21
   - DJANGOVER=django22
   - DJANGOVER=django30
   - DJANGOVER=django31
