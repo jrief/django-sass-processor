@@ -18,6 +18,6 @@ Release logic:
 13. git push
 """
 
-__version__ = '1.0.0.dev0'
+__version__ = '1.0.0'
 
 default_app_config = 'sass_processor.apps.SassProcessorConfig'
