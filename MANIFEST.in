@@ -1,6 +1,1 @@
-include LICENSE-MIT
-include README.md
-recursive-exclude *.pyc
-recursive-include sass_processor *.py
-recursive-exclude tests *
-recursive-exclude .*
+recursive-include tests/ *.py
