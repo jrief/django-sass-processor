@@ -1,5 +1,9 @@
 # Changes for django-sass-processor
 
+- 1.0.1
+* Fix storage options for non-filesystem staic storages (thanks to TheRandomDog for finding)
+* Dev: Move to setup.cfg configuration
+
 - 1.0.0
 * Management command `compilescss` now uses the same storage as the template tags.
 * Any storage can now be used as destination.
