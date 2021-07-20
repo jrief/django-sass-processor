@@ -12,7 +12,6 @@ third party services nor special IDE plugins.
 [![Downloads](https://img.shields.io/pypi/dm/django-sass-processor.svg)](https://pypi.python.org/pypi/django-sass-processor)
 [![Twitter Follow](https://img.shields.io/twitter/follow/shields_io.svg?style=social&label=Follow&maxAge=2592000)](https://twitter.com/jacobrief)
 
-**Version 0.7.5 is the latest version to support Python-2.7** 
 
 ## Other good reasons for using this library
 
@@ -434,7 +433,7 @@ configure a dictionary with options that will be passed to the storage class as 
 in `SASS_PROCESSOR_STORAGE_OPTIONS` (e.g. if you want to use `FileSystemStorage`, but with
 a different `location` or `base_url`:
 
-```
+```python
 SASS_PROCESSOR_STORAGE = 'django.core.files.storage.FileSystemStorage'
 SASS_PROCESSOR_STORAGE_OPTIONS = {
     'location': '/srv/media/generated',
@@ -442,17 +441,22 @@ SASS_PROCESSOR_STORAGE_OPTIONS = {
 }
 ```
 
+
+### Amazon's S3 Storage
+
 Using the S3 storage backend from [django-storages](https://django-storages.readthedocs.io/en/latest/)
 with its regular configuration (if you do not otherwise use it for service static files):
 
-```
+```python
 SASS_PROCESSOR_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 ```
 
 
 ## Heroku
 
-If you are deploying to [Heroku](https://www.heroku.com/), use the [heroku-buildpack-django-sass](https://elements.heroku.com/buildpacks/drpancake/heroku-buildpack-django-sass) buildpack to automatically compile scss for you.
+If you are deploying to [Heroku](https://www.heroku.com/), use the
+[heroku-buildpack-django-sass](https://elements.heroku.com/buildpacks/drpancake/heroku-buildpack-django-sass)
+buildpack to automatically compile scss for you.
 
 
 ## Development
