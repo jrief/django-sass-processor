@@ -1,7 +1,10 @@
 # Changes for django-sass-processor
 
+- 1.1
+* Add compatibility layer to support Django's `ManifestStaticFilesStorage`.
+
 - 1.0.1
-* Fix storage options for non-filesystem staic storages (thanks to TheRandomDog for finding)
+* Fix storage options for non-filesystem static storages (thanks to TheRandomDog for finding)
 * Dev: Move to setup.cfg configuration
 
 - 1.0.0
