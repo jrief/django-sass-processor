@@ -5,7 +5,7 @@ Annoyed having to run a Compass, Grunt or Gulp daemon while developing Django pr
 Well, then this app is for you! Compile SASS/SCSS files on the fly without having to manage
 third party services nor special IDE plugins.
 
-[![Build Status](https://travis-ci.org/jrief/django-sass-processor.svg)](https://travis-ci.org/jrief/django-sass-processor)
+[![Build Status](https://github.com/jrief/django-sass-processor/actions/workflows/tests.yml/badge.svg)](https://github.com/jrief/django-sass-processor/actions)
 [![PyPI](https://img.shields.io/pypi/pyversions/django-sass-processor.svg)]()
 [![PyPI version](https://img.shields.io/pypi/v/django-sass-processor.svg)](https://pypi.python.org/pypi/django-sass-processor)
 [![PyPI](https://img.shields.io/pypi/l/django-sass-processor.svg)]()
