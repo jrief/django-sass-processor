@@ -480,11 +480,12 @@ buildpack to automatically compile scss for you.
 
 ## Development
 
-To run the tests locally, clone the repository, create a new virtualenv, activate it and then run
+To run the tests locally, clone the repository, and, in your local copy, create a new virtualenv.
 these commands:
 
 ```shell
-cd django-sass-processor
-pip install tox
-tox
+python -m pip install --upgrade pip
+pip install Django
+pip install -r tests/requirements.txt
+python -m pytest tests
 ```
