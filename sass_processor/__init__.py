@@ -20,4 +20,7 @@ Release logic:
 
 __version__ = '1.1'
 
-default_app_config = 'sass_processor.apps.SassProcessorConfig'
+import django
+
+if django.VERSION < (4, 0):
+    default_app_config = 'sass_processor.apps.SassProcessorConfig'
