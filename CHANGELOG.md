@@ -1,5 +1,9 @@
 # Changes for django-sass-processor
 
+- 1.2
+* Stringify directory settings, since they might use Python's `pathlib.Path` class.
+* Add support for Django-4.0.
+
 - 1.1
 * Add compatibility layer to support Django's `ManifestStaticFilesStorage`.
 
