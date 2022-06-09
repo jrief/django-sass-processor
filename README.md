@@ -5,7 +5,7 @@ Annoyed having to run a Compass, Grunt or Gulp daemon while developing Django pr
 Well, then this app is for you! Compile SASS/SCSS files on the fly without having to manage
 third party services nor special IDE plugins.
 
-[![Build Status](https://travis-ci.org/jrief/django-sass-processor.svg)](https://travis-ci.org/jrief/django-sass-processor)
+[![Build Status](https://github.com/jrief/django-sass-processor/actions/workflows/tests.yml/badge.svg)](https://github.com/jrief/django-sass-processor/actions)
 [![PyPI](https://img.shields.io/pypi/pyversions/django-sass-processor.svg)]()
 [![PyPI version](https://img.shields.io/pypi/v/django-sass-processor.svg)](https://pypi.python.org/pypi/django-sass-processor)
 [![PyPI](https://img.shields.io/pypi/l/django-sass-processor.svg)]()
@@ -480,11 +480,12 @@ buildpack to automatically compile scss for you.
 
 ## Development
 
-To run the tests locally, clone the repository, create a new virtualenv, activate it and then run
+To run the tests locally, clone the repository, and, in your local copy, create a new virtualenv.
 these commands:
 
 ```shell
-cd django-sass-processor
-pip install tox
-tox
+python -m pip install --upgrade pip
+pip install Django
+pip install -r tests/requirements.txt
+python -m pytest tests
 ```

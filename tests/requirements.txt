@@ -1,0 +1,5 @@
+libsass
+pytest
+pytest-django
+jinja2
+django-compressor
