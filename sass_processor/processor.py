@@ -26,7 +26,7 @@ logger = logging.getLogger('sass-processor')
 class SassProcessor:
     source_storage = SassFileStorage()
     delivery_storage = get_storage_class(settings.STATICFILES_STORAGE)()
-    include_paths = list(getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', []))
+    include_paths = [str(ip) for ip in getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', [])]
     try:
         sass_precision = int(settings.SASS_PRECISION)
     except (AttributeError, TypeError, ValueError):
@@ -44,7 +44,7 @@ class SassProcessor:
         self._path = path
         nmd = [d[1] for d in getattr(settings, 'STATICFILES_DIRS', [])
                if isinstance(d, (list, tuple)) and d[0] == 'node_modules']
-        self.node_modules_dir = nmd[0] if len(nmd) else None
+        self.node_modules_dir = str(nmd[0]) if len(nmd) else None
 
     def __call__(self, path):
         basename, ext = os.path.splitext(path)
