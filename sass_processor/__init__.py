@@ -18,7 +18,7 @@ Release logic:
 13. git push
 """
 
-__version__ = '1.2'
+__version__ = '1.2.1'
 
 import django
 
