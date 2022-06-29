@@ -82,6 +82,13 @@ class Command(BaseCommand):
             help=_(
                 "Set the precision for numeric computations in the SASS processor. Default: settings.SASS_PRECISION.")
         )
+        parser.add_argument(
+            '--exclude-py',
+            action='store_true',
+            dest='exclude_py',
+            default=False,
+            help=_("Exclude python files from scan?")
+        )
 
     def get_loaders(self):
         template_source_loaders = []
@@ -143,18 +150,19 @@ class Command(BaseCommand):
 
             self.processed_files = []
 
-            # find all Python files making up this project; They might invoke `sass_processor`
-            for py_source in self.find_sources():
-                if self.verbosity > 1:
-                    self.stdout.write("Parsing file: %s" % py_source)
-                elif self.verbosity == 1:
-                    self.stdout.write(".", ending="")
-                try:
-                    self.parse_source(py_source)
-                except (SyntaxError, IndentationError) as e:
-                    self.stderr.write("Syntax error encountered processing %s" % py_source)
-                    self.stderr.write("Aborting compilation")
-                    raise
+            if not options['exclude_py']:
+                # find all Python files making up this project; They might invoke `sass_processor`
+                for py_source in self.find_sources():
+                    if self.verbosity > 1:
+                        self.stdout.write("Parsing file: %s" % py_source)
+                    elif self.verbosity == 1:
+                        self.stdout.write(".", ending="")
+                    try:
+                        self.parse_source(py_source)
+                    except SyntaxError as e:
+                        self.stderr.write("Syntax error encountered processing %s" % py_source)
+                        self.stderr.write("Aborting compilation")
+                        raise
 
             # find all Django/Jinja2 templates making up this project; They might invoke `sass_src`
             templates = self.find_templates()
