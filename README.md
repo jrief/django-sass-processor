@@ -489,3 +489,9 @@ pip install Django
 pip install -r tests/requirements.txt
 python -m pytest tests
 ```
+
+
+## Third Party Documentation
+
+Brian wrote a nice artice on
+[how to easily use SASS/SCSS with Django](https://engineertodeveloper.com/how-to-easily-use-sass-scss-with-django/).
