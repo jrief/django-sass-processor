@@ -146,14 +146,14 @@ class Command(BaseCommand):
             # find all Python files making up this project; They might invoke `sass_processor`
             for py_source in self.find_sources():
                 if self.verbosity > 1:
-                    self.stdout.write("Parsing file: %s" % py_source)
+                    self.stdout.write("Parsing file: {}".format(py_source))
                 elif self.verbosity == 1:
                     self.stdout.write(".", ending="")
                 try:
                     self.parse_source(py_source)
-                except (SyntaxError, IndentationError) as e:
-                    self.stderr.write("Syntax error encountered processing %s" % py_source)
-                    self.stderr.write("Aborting compilation")
+                except (SyntaxError, IndentationError) as exc:
+                    msg = "Syntax error encountered processing {0}: {1}\nAborting compilation."
+                    self.stderr.write(msg.format(py_source, exc))
                     raise
 
             # find all Django/Jinja2 templates making up this project; They might invoke `sass_src`
