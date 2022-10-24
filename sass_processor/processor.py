@@ -6,7 +6,6 @@ import subprocess
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
-from django.core.files.storage import get_storage_class
 from django.template import Context
 from django.utils.encoding import force_bytes
 
@@ -25,7 +24,6 @@ logger = logging.getLogger('sass-processor')
 
 class SassProcessor:
     source_storage = SassFileStorage()
-    delivery_storage = get_storage_class(settings.STATICFILES_STORAGE)()
     include_paths = [str(ip) for ip in getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', [])]
     try:
         sass_precision = int(settings.SASS_PRECISION)
@@ -142,10 +140,7 @@ class SassProcessor:
 
     @classmethod
     def handle_simple(cls, path):
-        try:
-            return cls.delivery_storage.url(path)
-        except ValueError:
-            return cls.source_storage.url(path)
+        return cls.source_storage.url(path)
 
 
 _sass_processor = SassProcessor()

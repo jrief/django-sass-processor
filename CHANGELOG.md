@@ -1,5 +1,8 @@
 # Changes for django-sass-processor
 
+- 1.2.2
+* Revert regression introduced in version 1.1: Remove compatibility layer to support
+  Django's `ManifestStaticFilesStorage`.
 
 - 1.2.1
 * In newer versions of Django `default_app_config`is deprecated.
