@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.staticfiles.finders import get_finders
+from django.contrib.staticfiles.storage import ManifestStaticFilesStorage as DjangoManifestStaticFilesStorage
 from django.core.files.storage import FileSystemStorage, get_storage_class
 from django.utils.functional import LazyObject
 
@@ -15,6 +16,12 @@ class SassFileStorage(LazyObject):
             storage_options['base_url'] = settings.STATIC_URL
 
         self._wrapped = storage_class(**storage_options)
+
+
+class ManifestStaticFilesStorage(DjangoManifestStaticFilesStorage):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('manifest_storage', SassFileStorage())
+        super().__init__(*args, **kwargs)
 
 
 def find_file(path):

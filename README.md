@@ -208,11 +208,11 @@ COMPRESS_JINJA2_GET_ENVIRONMENT = environment
 
 If your project is configured to use the
 [ManifestStaticFilesStorage](https://docs.djangoproject.com/en/stable/ref/contrib/staticfiles/#manifeststaticfilesstorage),
-then please configure two different storage classes in `settings.py`, one for the lookup of *.scss-files, and one
+then please configure a special storage classes in `settings.py`, one for the lookup of *.scss-files, and one
 for delivering the compiled *.css-files.
 
 ```python
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'sass_processor.storage.ManifestStaticFilesStorage'
 
 SASS_PROCESSOR_STORAGE = 'django.contrib.staticfiles.storage.FileSystemStorage'
 SASS_PROCESSOR_STORAGE_OPTIONS = {

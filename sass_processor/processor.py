@@ -6,7 +6,6 @@ import subprocess
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import ContentFile
-from django.core.files.storage import get_storage_class
 from django.template import Context
 from django.utils.encoding import force_bytes
 
@@ -24,9 +23,8 @@ logger = logging.getLogger('sass-processor')
 
 
 class SassProcessor:
-    source_storage = SassFileStorage()
-    delivery_storage = get_storage_class(settings.STATICFILES_STORAGE)()
-    include_paths = list(getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', []))
+    storage = SassFileStorage()
+    include_paths = [str(ip) for ip in getattr(settings, 'SASS_PROCESSOR_INCLUDE_DIRS', [])]
     try:
         sass_precision = int(settings.SASS_PRECISION)
     except (AttributeError, TypeError, ValueError):
@@ -62,7 +60,7 @@ class SassProcessor:
             return css_filename
         sourcemap_filename = css_filename + '.map'
         base = os.path.dirname(filename)
-        if self.source_storage.exists(css_filename) and self.is_latest(sourcemap_filename, base):
+        if self.storage.exists(css_filename) and self.is_latest(sourcemap_filename, base):
             return css_filename
 
         # with offline compilation, raise an error, if css file could not be found.
@@ -109,13 +107,13 @@ class SassProcessor:
                 if len(autoprefixed_content) >= len(content):
                     content = autoprefixed_content
 
-        if self.source_storage.exists(css_filename):
-            self.source_storage.delete(css_filename)
-        self.source_storage.save(css_filename, ContentFile(content))
-        if self.source_storage.exists(sourcemap_filename):
-            self.source_storage.delete(sourcemap_filename)
+        if self.storage.exists(css_filename):
+            self.storage.delete(css_filename)
+        self.storage.save(css_filename, ContentFile(content))
+        if self.storage.exists(sourcemap_filename):
+            self.storage.delete(sourcemap_filename)
         if sourcemap:
-            self.source_storage.save(sourcemap_filename, ContentFile(sourcemap))
+            self.storage.save(sourcemap_filename, ContentFile(sourcemap))
         return css_filename
 
     def resolve_path(self, context=None):
@@ -128,10 +126,10 @@ class SassProcessor:
         return ext in self.sass_extensions
 
     def is_latest(self, sourcemap_file, base):
-        if not self.source_storage.exists(sourcemap_file):
+        if not self.storage.exists(sourcemap_file):
             return False
-        sourcemap_mtime = self.source_storage.get_modified_time(sourcemap_file).timestamp()
-        with self.source_storage.open(sourcemap_file, 'r') as fp:
+        sourcemap_mtime = self.storage.get_modified_time(sourcemap_file).timestamp()
+        with self.storage.open(sourcemap_file, 'r') as fp:
             sourcemap = json.load(fp)
         for srcfilename in sourcemap.get('sources'):
             srcfilename = os.path.join(base, srcfilename)
@@ -142,10 +140,7 @@ class SassProcessor:
 
     @classmethod
     def handle_simple(cls, path):
-        try:
-            return cls.delivery_storage.url(path)
-        except ValueError:
-            return cls.source_storage.url(path)
+        return cls.storage.url(path)
 
 
 _sass_processor = SassProcessor()
