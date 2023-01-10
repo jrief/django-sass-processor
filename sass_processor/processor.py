@@ -91,7 +91,7 @@ class SassProcessor:
 
         # autoprefix CSS files using postcss in external JavaScript process
         if self.node_npx_path and os.path.isdir(self.node_modules_dir or ''):
-            os.environ['NODE_PATH'] = self.node_modules_dir
+            os.environ['NODE_PATH'] = str(self.node_modules_dir)
             try:
                 options = [self.node_npx_path, 'postcss', '--use', 'autoprefixer']
                 if not settings.DEBUG:
