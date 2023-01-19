@@ -140,3 +140,26 @@ class SassProcessorTest(TestCase):
             engine=['jinja2', 'django'],
             use_storage=True
         )
+
+    @override_settings(
+        DEBUG=False,
+        SASS_PROCESSOR_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage',
+        STATICFILES_STORAGE='django.contrib.staticfiles.storage.ManifestStaticFilesStorage',
+    )
+    def test_manifest_static_files_storage(self):
+        css_file = settings.PROJECT_ROOT / 'static/tests/css/main.css'
+        assert not css_file.exists()
+        call_command('compilescss', use_storage=False)
+        assert css_file.exists()
+        with css_file.open('r') as f:
+            output = f.read()
+        expected = '#main p{color:#00ff00;width:97%}#main p .redbox{background-color:#ff0000}#main p .redbox:hover{color:#000000}\n'
+        assert expected == output
+        hashed_css_file = settings.PROJECT_ROOT / 'tmpstatic/tests/css/main.08b498e281f7.css'
+        assert not hashed_css_file.exists()
+        call_command('collectstatic', interactive=False, ignore_patterns=['*.scss'])
+        assert hashed_css_file.exists()
+        with hashed_css_file.open('r') as f:
+            output = f.read()
+        assert expected == output
+        call_command('compilescss', use_storage=False, delete_files=True)
