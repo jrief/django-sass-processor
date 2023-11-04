@@ -80,7 +80,8 @@ INSTALLED_APPS = [
 ```
 
 **django-sass-processor** is shipped with a special finder, to locate the generated `*.css` files
-in the directory referred by `STORAGES['sass_processor']['ROOT']` (or, if unset `STATIC_ROOT`). Just add it to
+in the directory referred by `STORAGES['sass_processor']['ROOT']` (for Django >= 4.2.*) or 
+`SASS_PROCESSOR_ROOT` (for Django <= 4.1.*), or, if unset `STATIC_ROOT`. Just add it to
 your `settings.py`. If there is no `STATICFILES_FINDERS` in your `settings.py` don't forget
 to include the **Django** [default finders](https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-STATICFILES_FINDERS).
 
@@ -129,7 +130,8 @@ letter or number are intended to be included by the HTML tag
 `<link href="{% sass_src 'path/to/file.scss' %}" ...>`.
 
 During development, or when `SASS_PROCESSOR_ENABLED = True`, the compiled file is placed into the
-folder referenced by `STORAGES['sass_processor']['ROOT']` (if unset, this setting defaults to `STATIC_ROOT`).
+folder referenced by `STORAGES['sass_processor']['ROOT']` (for Django >= 4.2.*) or `SASS_PROCESSOR_ROOT` (for Django <= 4.1.*).
+If unset, this setting defaults to `STATIC_ROOT`.
 Having a location outside of the working directory prevents to pollute your local `static/css/...`
 directories with auto-generated files. Therefore assure, that this directory is writable by the
 Django runserver.
@@ -311,7 +313,8 @@ above command:
 
 This will remove all occurrences of previously generated `*.css` files.
 
-Or you may compile results to the `STORAGES['sass_processor']['ROOT']` directory directy (if not specified - to
+Or you may compile results to the `STORAGES['sass_processor']['ROOT']` [Django >= 4.2.*] or `SASS_PROCESSOR_ROOT` 
+[Django <= 4.1.*] directory directy (if not specified - to
 `STATIC_ROOT`):
 
 ```shell
@@ -431,16 +434,24 @@ A custom Storage class can be used if your deployment needs to serve generated C
 e.g. when your static files storage is not writable at runtime and you nede to re-compile CSS
 in production. To use a custom storage, configure it in `STORAGES['sass_processor']['BACKEND']`. You can also
 configure a dictionary with options that will be passed to the storage class as keyword arguments
-in `STORAGES['sass_processor']['OPTIONS']` (e.g. if you want to use `FileSystemStorage`, but with
-a different `location` or `base_url`:
+in `STORAGES['sass_processor']['OPTIONS']` [Django >= 4.2.*] or `SASS_PROCESSOR_STORAGE_OPTIONS` [Django <= 4.1.*>] 
+(e.g. if you want to use `FileSystemStorage`, but with a different `location` or `base_url`:
 
 ```python
+# For Django >= 4.2.*
 STORAGES['sass_processor'] = {
     'BACKEND': 'django.core.files.storage.FileSystemStorage',
     'OPTIONS': {
         'location': '/srv/media/generated',
         'base_url': 'https://media.myapp.example.com/generated'
     }
+}
+
+# For Django <= 4.1.*
+SASS_PROCESSOR_STORAGE = 'django.core.files.storage.FileSystemStorage'
+SASS_PROCESSOR_STORAGE_OPTIONS = {
+    'location': '/srv/media/generated',
+    'base_url': 'https://media.myapp.example.com/generated'
 }
 ```
 
@@ -451,9 +462,13 @@ Using the S3 storage backend from [django-storages](https://django-storages.read
 with its regular configuration (if you do not otherwise use it for service static files):
 
 ```python
+# For Django >= 4.2.*
 STORAGES['sass_processor'] = {
     'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage'
 }
+
+# For Django <= 4.1.*
+SASS_PROCESSOR_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 ```
 
 
