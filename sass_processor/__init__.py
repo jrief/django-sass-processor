@@ -18,10 +18,4 @@ Release logic:
 13. git push
 """
 
-__version__ = '1.2.2'
-
-import django
-
-if django.VERSION < (3, 2):
-    # https://docs.djangoproject.com/en/dev/releases/3.2/#whats-new-3-2
-    default_app_config = 'sass_processor.apps.SassProcessorConfig'
+__version__ = '1.3'
