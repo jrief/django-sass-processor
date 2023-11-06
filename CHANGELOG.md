@@ -1,5 +1,10 @@
 # Changes for django-sass-processor
 
+- 1.3
+* Add support for Django-4.2.
+* Update settings for Django >= 4.2.* to use `STORAGES `, instead of `STATICFILES_STORAGE`.
+* Remove usage of deprecated `get_storage_class` for Django >= 4.2.*.
+
 - 1.2.2
 * Revert regression introduced in version 1.1: Remove compatibility layer to support
   Django's `ManifestStaticFilesStorage`.
