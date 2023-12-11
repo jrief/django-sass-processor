@@ -1,3 +1,4 @@
+setuptools
 libsass
 pytest
 pytest-django
