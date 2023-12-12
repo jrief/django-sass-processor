@@ -1,5 +1,11 @@
 # Changes for django-sass-processor
 
+- 1.4
+* Drop support for Python 3.7.
+* Add support for Python 3.12.
+* Drop support for Django 4.0 and 4.1.
+* Add support for Django 5.0.
+
 - 1.3
 * Add support for Django-4.2.
 * Update settings for Django >= 4.2.* to use `STORAGES `, instead of `STATICFILES_STORAGE`.
