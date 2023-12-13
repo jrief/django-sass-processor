@@ -28,30 +28,30 @@ class SassProcessorTest(TestCase):
         )
         # Strip the line breaks.
         template_content = template.render({}).strip()
-        self.assertEqual('/static/tests/css/main.css', template_content)
+        assert template_content == '/static/tests/css/main.css'
 
-        css_file = os.path.join(settings.STATIC_ROOT, 'tests/css/main.css')
-        self.assertTrue(os.path.exists(css_file))
-        with open(css_file, 'r') as f:
+        css_file = settings.STATIC_ROOT / 'tests/css/main.css'
+        assert css_file.exists()
+        with css_file.open('r') as f:
             output = f.read()
         expected = "#main p{color:#00ff00;width:97%}#main p .redbox{background-color:#ff0000}#main p .redbox:hover{color:#000000}\n\n/*# sourceMappingURL=main.css.map */"
-        self.assertEqual(expected, output)
+        assert expected == output
 
         # check if compilation is skipped file for a second invocation of `sass_src`
-        timestamp = os.path.getmtime(css_file)
+        timestamp = css_file.stat().st_mtime
         template.render({})
-        self.assertEqual(timestamp, os.path.getmtime(css_file))
+        assert timestamp == css_file.stat().st_mtime
 
         # removing `main.css.map` should trigger a recompilation
-        os.remove(css_file + '.map')
+        css_file.with_suffix(css_file.suffix + '.map').unlink()
         template.render({})
-        self.assertTrue(os.path.exists(css_file + '.map'))
+        assert css_file.with_suffix(css_file.suffix + '.map').exists()
 
         # if `main.scss` is newer than `main.css`, recompile everything
         longago = calendar.timegm(datetime(2017, 1, 1).timetuple())
         os.utime(css_file, (longago, longago))
         template.render({})
-        self.assertGreater(timestamp, os.path.getmtime(css_file))
+        assert timestamp > css_file.stat().st_mtime
 
     def test_sass_src_django(self):
         self.assert_sass_src_engine(
@@ -76,12 +76,12 @@ class SassProcessorTest(TestCase):
 
         css_file = sass_processor('tests/css/bluebox.scss')
         self.assertEqual('/static/tests/css/bluebox.css', css_file)
-        css_file = os.path.join(settings.STATIC_ROOT, 'tests/css/bluebox.css')
-        self.assertTrue(os.path.exists(css_file))
-        with open(css_file, 'r') as f:
+        css_file = settings.STATIC_ROOT / 'tests/css/bluebox.css'
+        assert css_file.exists()
+        with css_file.open('r') as f:
             output = f.read()
         expected = '.bluebox{background-color:#0000ff;margin:10.0px 5.0px 20.0px 15.0px;color:#fa0a78}\n\n/*# sourceMappingURL=bluebox.css.map */'
-        self.assertEqual(expected, output)
+        assert expected == output
 
     def assert_management_command(self, **kwargs):
         call_command(
@@ -89,18 +89,18 @@ class SassProcessorTest(TestCase):
             **kwargs
         )
         if kwargs.get('use_storage', False):
-            css_file = os.path.join(settings.STATIC_ROOT, 'tests/css/main.css')
+            css_file = settings.STATIC_ROOT / 'tests/css/main.css'
         else:
-            css_file = os.path.join(settings.PROJECT_ROOT, 'static/tests/css/main.css')
-        with open(css_file, 'r') as f:
+            css_file = settings.PROJECT_ROOT / 'static/tests/css/main.css'
+        with css_file.open('r') as f:
             output = f.read()
         expected = '#main p{color:#00ff00;width:97%}#main p .redbox{background-color:#ff0000}#main p .redbox:hover{color:#000000}\n'
-        self.assertEqual(expected, output)
-        self.assertFalse(os.path.exists(css_file + '.map'))
+        assert expected == output
+        assert not css_file.with_suffix(css_file.suffix + '.map').exists()
 
         if not kwargs.get('use_storage', False):
             call_command('compilescss', delete_files=True)
-            self.assertFalse(os.path.exists(css_file))
+            assert not css_file.exists()
 
     @override_settings(DEBUG=False)
     def test_management_command_django(self):
@@ -140,3 +140,26 @@ class SassProcessorTest(TestCase):
             engine=['jinja2', 'django'],
             use_storage=True
         )
+
+    @override_settings(
+        DEBUG=False,
+        SASS_PROCESSOR_STORAGE='django.contrib.staticfiles.storage.StaticFilesStorage',
+        STATICFILES_STORAGE='django.contrib.staticfiles.storage.ManifestStaticFilesStorage',
+    )
+    def test_manifest_static_files_storage(self):
+        css_file = settings.PROJECT_ROOT / 'static/tests/css/main.css'
+        assert not css_file.exists()
+        call_command('compilescss', use_storage=False)
+        assert css_file.exists()
+        with css_file.open('r') as f:
+            output = f.read()
+        expected = '#main p{color:#00ff00;width:97%}#main p .redbox{background-color:#ff0000}#main p .redbox:hover{color:#000000}\n'
+        assert expected == output
+        hashed_css_file = settings.PROJECT_ROOT / 'tmpstatic/tests/css/main.08b498e281f7.css'
+        assert not hashed_css_file.exists()
+        call_command('collectstatic', interactive=False, ignore_patterns=['*.scss'])
+        assert hashed_css_file.exists()
+        with hashed_css_file.open('r') as f:
+            output = f.read()
+        assert expected == output
+        call_command('compilescss', use_storage=False, delete_files=True)

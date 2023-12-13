@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from tests.jinja2 import environment
 
@@ -12,6 +12,8 @@ DATABASES = {
         'NAME': ':memory:',
     }
 }
+
+PROJECT_ROOT = Path(__file__).parent
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
@@ -64,8 +66,6 @@ SECRET_KEY = 'secret'
 
 STATIC_URL = '/static/'
 
-PROJECT_ROOT = os.path.abspath(os.path.join(__file__, os.path.pardir))
-
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
@@ -73,8 +73,10 @@ STATICFILES_FINDERS = [
 ]
 
 STATICFILES_DIRS = [
-    os.path.join(PROJECT_ROOT, 'static'),
+    PROJECT_ROOT / 'static',
 ]
+
+STATIC_ROOT = PROJECT_ROOT / 'tmpstatic'
 
 SASS_PROCESSOR_ENABLED = True
 
@@ -85,6 +87,3 @@ SASS_PROCESSOR_CUSTOM_FUNCTIONS = {
 }
 
 SASS_BLUE_COLOR = '#0000ff'
-
-
-STATIC_ROOT = os.path.join(os.path.dirname(__file__), "tmpstatic")
