@@ -1,7 +1,7 @@
 from django import VERSION
 from django.conf import settings
 from django.contrib.staticfiles.finders import get_finders
-from django.core.files.storage import FileSystemStorage, get_storage_class
+from django.core.files.storage import FileSystemStorage
 from django.utils.functional import LazyObject
 from django.utils.module_loading import import_string
 
@@ -17,6 +17,7 @@ class SassFileStorage(LazyObject):
             storage_options = sass_processor_storage.get("OPTIONS") or {}
             storage_class = import_string(storage_path)
         else:
+            from django.core.files.storage import get_storage_class
             staticfiles_storage_backend = settings.STATICFILES_STORAGE
             storage_path = getattr(settings, 'SASS_PROCESSOR_STORAGE', staticfiles_storage_backend)
             storage_options = getattr(settings, 'SASS_PROCESSOR_STORAGE_OPTIONS', {})
