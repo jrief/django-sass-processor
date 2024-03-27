@@ -4,6 +4,7 @@ import ast
 from importlib import import_module
 import sass
 from compressor.exceptions import TemplateDoesNotExist, TemplateSyntaxError
+from pathlib import Path
 
 from django.apps import apps
 from django.conf import settings
@@ -200,7 +201,7 @@ class Command(BaseCommand):
         `sass_processor(scss_file)` and compile the filename into CSS.
         """
         callvisitor = FuncCallVisitor('sass_processor')
-        tree = ast.parse(open(filename, 'rb').read())
+        tree = ast.parse(Path(filename).read_bytes())
         callvisitor.visit(tree)
         for sass_fileurl in callvisitor.sass_files:
             sass_filename = find_file(sass_fileurl)
