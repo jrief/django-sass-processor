@@ -31,6 +31,9 @@ class SassFileStorage(LazyObject):
 
         self._wrapped = storage_class(**storage_options)
 
+    def __repr__(self):
+        return repr(self._wrapped)
+
 
 def find_file(path):
     for finder in get_finders():
