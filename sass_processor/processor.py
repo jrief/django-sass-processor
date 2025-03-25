@@ -58,9 +58,9 @@ class SassProcessor:
         css_filename = basename + '.css'
         if not self.processor_enabled:
             return css_filename
-        sourcemap_filename = css_filename + '.map'
+        sourcemap_filename = css_filename + '.map' if settings.DEBUG else None
         base = os.path.dirname(filename)
-        if self.source_storage.exists(css_filename) and self.is_latest(sourcemap_filename, base):
+        if self.source_storage.exists(css_filename) and (sourcemap_filename is None or self.is_latest(sourcemap_filename, base)):
             return css_filename
 
         # with offline compilation, raise an error, if css file could not be found.
@@ -110,9 +110,9 @@ class SassProcessor:
         if self.source_storage.exists(css_filename):
             self.source_storage.delete(css_filename)
         self.source_storage.save(css_filename, ContentFile(content))
-        if self.source_storage.exists(sourcemap_filename):
+        if sourcemap_filename and self.source_storage.exists(sourcemap_filename):
             self.source_storage.delete(sourcemap_filename)
-        if sourcemap:
+        if sourcemap and sourcemap_filename:
             self.source_storage.save(sourcemap_filename, ContentFile(sourcemap))
         return css_filename
 
