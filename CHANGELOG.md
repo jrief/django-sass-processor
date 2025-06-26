@@ -1,5 +1,8 @@
 # Changes for django-sass-processor
 
+- 1.4.2
+* Add support for Python 3.13 and Django 5.2.
+
 - 1.4.1
 * Fix compatibility with Django 5.1.
 
