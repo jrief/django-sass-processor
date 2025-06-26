@@ -440,7 +440,7 @@ in `STORAGES['sass_processor']['OPTIONS']` [Django >= 4.2.*] or `SASS_PROCESSOR_
 ```python
 # For Django >= 4.2.*
 STORAGES['sass_processor'] = {
-    'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
     'OPTIONS': {
         'location': '/srv/media/generated',
         'base_url': 'https://media.myapp.example.com/generated'
