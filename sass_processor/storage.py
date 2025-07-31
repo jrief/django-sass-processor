@@ -10,11 +10,13 @@ class SassFileStorage(LazyObject):
     def _setup(self):
         version_parts = VERSION[:2]
         if version_parts[0] > 4 or (version_parts[0] == 4 and version_parts[1] >= 2):
-            staticfiles_storage_backend = settings.STORAGES.get("staticfiles", {}).get("BACKEND")
-            sass_processor_storage = settings.STORAGES.get("sass_processor", {})
+            if "sass_processor" in settings.STORAGES:
+                storage_config = settings.STORAGES.get("sass_processor", {})
+            else:
+                storage_config = settings.STORAGES.get("staticfiles", {})
 
-            storage_path = sass_processor_storage.get("BACKEND") or staticfiles_storage_backend
-            storage_options = sass_processor_storage.get("OPTIONS") or {}
+            storage_path = storage_config.get("BACKEND")
+            storage_options = storage_config.get("OPTIONS")
             storage_class = import_string(storage_path)
         else:
             from django.core.files.storage import get_storage_class
