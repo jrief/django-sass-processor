@@ -23,7 +23,7 @@ class SassProcessorConfig(AppConfig):
 
     @classmethod
     def traverse_tree(cls, static_dir):
-        """traverse the static folders an look for at least one file ending in .scss/.sass"""
+        """traverse the static folders and look for at least one file ending in .scss/.sass"""
         for root, dirs, files in os.walk(static_dir):
             for filename in files:
                 if cls._pattern.match(filename):

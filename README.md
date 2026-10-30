@@ -313,8 +313,7 @@ above command:
 
 This will remove all occurrences of previously generated `*.css` files.
 
-Or you may compile results to the `STORAGES['sass_processor']['ROOT']` [Django >= 4.2.*] or `SASS_PROCESSOR_ROOT` 
-[Django <= 4.1.*] directory directy (if not specified - to
+Or you may compile results to the `STORAGES['sass_processor']['ROOT']` directory directy (if not specified - to
 `STATIC_ROOT`):
 
 ```shell
