@@ -1,5 +1,6 @@
-from django.template import Library
-from django.template.base import Node, TemplateSyntaxError
+from django.template import Library, TemplateSyntaxError
+from django.template.base import Node
+
 from sass_processor.processor import SassProcessor
 
 try:
